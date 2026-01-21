@@ -1,0 +1,271 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SimpleLoginApp.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="720"
+        x:Class="SimpleLoginApp.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Đăng Nhập Hệ Thống"
+        Width="1200" Height="720"
+        MinWidth="1080" MinHeight="680"
+        Background="#1B1A17">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="InkDark" Color="#1B1A17"/>
+        <SolidColorBrush x:Key="InkMuted" Color="#2A2925"/>
+        <SolidColorBrush x:Key="ButtonGold" Color="#F8D342"/>
+        <SolidColorBrush x:Key="ButtonGoldHover" Color="#F1C52B"/>
+        <SolidColorBrush x:Key="InputBorder" Color="#2A2925"/>
+        <SolidColorBrush x:Key="InputFill" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="InputIconFill" Color="#1B1A17"/>
+        <LinearGradientBrush x:Key="LeftPanelBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#F2C200" Offset="0"/>
+            <GradientStop Color="#F6D452" Offset="1"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="RightPanelBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#7AA236" Offset="0"/>
+            <GradientStop Color="#8AB949" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Resources>
+
+    <Window.Styles>
+        <Style Selector="Window">
+            <Setter Property="FontFamily" Value="Trebuchet MS"/>
+            <Setter Property="FontSize" Value="16"/>
+        </Style>
+        <Style Selector="Grid.login-root">
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="RenderTransform" Value="translate(0, 16)"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.45"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.6"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Grid.login-root.loaded">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="RenderTransform" Value="translate(0, 0)"/>
+        </Style>
+        <Style Selector="StackPanel.form-stack">
+            <Setter Property="Opacity" Value="0"/>
+            <Setter Property="RenderTransform" Value="translate(0, 14)"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.45" Delay="0:0:0.08"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.6" Delay="0:0:0.08"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Grid.login-root.loaded StackPanel.form-stack">
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="RenderTransform" Value="translate(0, 0)"/>
+        </Style>
+        <Style Selector="TextBox.login-input">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Foreground" Value="{StaticResource InkDark}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource InkDark}"/>
+        </Style>
+        <Style Selector="Button.login-button">
+            <Setter Property="Background" Value="{StaticResource ButtonGold}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource InkDark}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Padding" Value="18,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.login-button:pointerover">
+            <Setter Property="Background" Value="{StaticResource ButtonGoldHover}"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid x:Name="Root" Classes="login-root">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.42*"/>
+            <ColumnDefinition Width="0.58*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Background="{StaticResource LeftPanelBrush}">
+            <Grid>
+                <Canvas IsHitTestVisible="False" Opacity="0.15">
+                    <Ellipse Width="220" Height="220" Fill="#FFF7D974" Canvas.Left="20" Canvas.Top="30"/>
+                    <Ellipse Width="140" Height="140" Fill="#FFF7D974" Canvas.Left="320" Canvas.Top="260"/>
+                    <Ellipse Width="180" Height="180" Fill="#FFF7D974" Canvas.Left="40" Canvas.Top="420"/>
+                </Canvas>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="20">
+                    <Border Width="280" Height="280" CornerRadius="140" Background="#FFFDF1"
+                            BorderBrush="#F0D375" BorderThickness="2">
+                        <Grid>
+                            <Canvas IsHitTestVisible="False">
+                                <Ellipse Width="90" Height="90" Fill="#FFF2D16A" Canvas.Left="20" Canvas.Top="12"/>
+                                <Ellipse Width="26" Height="26" Fill="#FFE38A27" Canvas.Left="56" Canvas.Top="48"/>
+                            </Canvas>
+                            <TextBlock Text="KIDO" FontSize="64" FontWeight="Bold"
+                                       Foreground="#1B4FD1"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                            <Border Width="46" Height="46" CornerRadius="23"
+                                    Background="#F9DD6B"
+                                    BorderBrush="#D0A62C" BorderThickness="2"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,32,0">
+                                <TextBlock Text="edu" FontSize="14" FontWeight="Bold"
+                                           Foreground="#6A4B00"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                            <Border Width="46" Height="46" CornerRadius="23"
+                                    Background="#DDF0FF"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Bottom"
+                                    Margin="32,0,0,32">
+                                <TextBlock Text="BOT" FontSize="12" FontWeight="Bold"
+                                           Foreground="#1B4FD1"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Border>
+                    <TextBlock FontSize="16" FontWeight="Bold" Foreground="#B01912" TextAlignment="Center">
+                        <Run Text="CÔNG TY CỔ PHẦN GIÁO DỤC"/>
+                        <LineBreak/>
+                        <Run Text="KHOA HỌC CÔNG NGHỆ"/>
+                        <LineBreak/>
+                        <Run Text="ICHI SKILL"/>
+                    </TextBlock>
+                </StackPanel>
+                <TextBlock Text="Copyright (c) PB.BaoGa(TM), All rights reserved."
+                           FontSize="12"
+                           FontStyle="Italic"
+                           Foreground="#5B4800"
+                           Margin="18,0,0,12"
+                           VerticalAlignment="Bottom"/>
+            </Grid>
+        </Border>
+
+        <Border Grid.Column="1" Background="{StaticResource RightPanelBrush}">
+            <Grid>
+                <Canvas IsHitTestVisible="False" Opacity="0.12">
+                    <Ellipse Width="260" Height="260" Fill="#FFFFFF" Canvas.Left="420" Canvas.Top="20"/>
+                    <Ellipse Width="200" Height="200" Fill="#FFFFFF" Canvas.Left="120" Canvas.Top="360"/>
+                    <Ellipse Width="130" Height="130" Fill="#FFFFFF" Canvas.Left="500" Canvas.Top="470"/>
+                </Canvas>
+                <StackPanel Classes="form-stack"
+                            Width="520"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Top"
+                            Margin="0,54,0,0"
+                            Spacing="16">
+                    <TextBlock Text="Đăng Nhập"
+                               FontSize="42"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource InkDark}"
+                               HorizontalAlignment="Center"/>
+                    <StackPanel Spacing="14">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Border Width="38" Height="38" Background="#E9F1D7" CornerRadius="19">
+                                <Viewbox Width="20" Height="20">
+                                    <Path Fill="{StaticResource InputIconFill}"
+                                          Data="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 1.79-8 4v2h16v-2c0-2.21-3.582-4-8-4z"/>
+                                </Viewbox>
+                            </Border>
+                            <Border Grid.Column="1"
+                                    Background="{StaticResource InputFill}"
+                                    BorderBrush="{StaticResource InputBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="10,6">
+                                <TextBox Classes="login-input" Watermark="Tài khoản"/>
+                            </Border>
+                        </Grid>
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <Border Width="38" Height="38" Background="#E9F1D7" CornerRadius="19">
+                                <Viewbox Width="20" Height="20">
+                                    <Path Fill="{StaticResource InputIconFill}"
+                                          Data="M17 8h-1V6a4 4 0 00-8 0v2H7a2 2 0 00-2 2v8a2 2 0 002 2h10a2 2 0 002-2v-8a2 2 0 00-2-2zm-6 8.5V17a1 1 0 112 0v-0.5a1.5 1.5 0 11-2 0zM10 8V6a2 2 0 114 0v2h-4z"/>
+                                </Viewbox>
+                            </Border>
+                            <Border Grid.Column="1"
+                                    Background="{StaticResource InputFill}"
+                                    BorderBrush="{StaticResource InputBorder}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    Padding="10,6">
+                                <TextBox Classes="login-input" Watermark="Mật khẩu" PasswordChar="*"/>
+                            </Border>
+                            <Border Grid.Column="2" Width="38" Height="38"
+                                    Background="#E9F1D7" CornerRadius="19">
+                                <Viewbox Width="20" Height="20">
+                                    <Path Fill="{StaticResource InputIconFill}"
+                                          Data="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7zm11 5a5 5 0 100-10 5 5 0 000 10z"/>
+                                </Viewbox>
+                            </Border>
+                        </Grid>
+                        <CheckBox Content="Ghi Nhớ"
+                                  Foreground="{StaticResource InkDark}"
+                                  Margin="50,0,0,0"/>
+                        <Button Classes="login-button"
+                                Content="Đăng Nhập"
+                                HorizontalAlignment="Center"
+                                Width="220"
+                                Height="44"/>
+                        <TextBlock Text="Kết Nối Máy Chủ Sẵn Sàng"
+                                   FontSize="15"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource InkDark}"
+                                   HorizontalAlignment="Center"/>
+                        <TextBlock FontSize="14"
+                                   Foreground="{StaticResource InkDark}"
+                                   TextWrapping="Wrap">
+                            <Run Text="- Sản phẩm cung cấp bởi: ICHI SKILL"/>
+                            <LineBreak/>
+                            <Run Text="- Hỗ trợ: Ultra Viewer"/>
+                            <LineBreak/>
+                            <Run Text="- Điện thoại: 0707 868 600 - 0789 636 979"/>
+                            <LineBreak/>
+                            <Run Text="- Email: hcns@IchiSkillManager.edu.vn"/>
+                            <LineBreak/>
+                            <Run Text="- Địa chỉ: 231/1 Nguyễn Phúc Chu, Phường 15, Quận Tân Bình"/>
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    Spacing="12"
+                                    Margin="0,6,0,0">
+                            <Border Width="36" Height="36" CornerRadius="18" Background="#3B5998">
+                                <TextBlock Text="f"
+                                           FontSize="20"
+                                           FontWeight="Bold"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                            <Border Width="36" Height="36" CornerRadius="18"
+                                    Background="{StaticResource ButtonGold}"
+                                    BorderBrush="{StaticResource InkDark}"
+                                    BorderThickness="1">
+                                <Viewbox Width="18" Height="18">
+                                    <Path Fill="{StaticResource InkDark}"
+                                          Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-1.54 0-2.97-.46-4.17-1.24.74-1.05 2.36-2.74 4.17-2.74 1.79 0 3.43 1.7 4.17 2.74A7.93 7.93 0 0112 20zm6.5-3.1c-1.1-1.54-3.36-3.4-6.5-3.4-3.14 0-5.4 1.86-6.5 3.4A7.94 7.94 0 014.08 8h15.84c-.13 2.14-.89 4.1-2.42 5.9zM4.08 6a7.93 7.93 0 017.92-4 7.93 7.93 0 017.92 4H4.08z"/>
+                                </Viewbox>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+
+</Window>
