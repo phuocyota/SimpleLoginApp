@@ -1,0 +1,493 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SimpleLoginApp.Views.DashboardWindow"
+        CanResize="True"
+        UseLayoutRounding="True"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Maximized"
+        Title="KIDO"
+        FontFamily="Segoe UI">
+
+  <Window.Styles>
+    <Style Selector="Button.nav">
+      <Setter Property="Background" Value="#66B24C"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="Padding" Value="10"/>
+      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+      <Setter Property="Height" Value="75"/>
+      <Setter Property="Width" Value="300"/>
+    </Style>
+    <Style Selector="Button.nav:pointerover">
+      <Setter Property="Background" Value="#58A642"/>
+    </Style>
+    <Style Selector="Button.nav.active">
+      <Setter Property="Background" Value="#4F9B3B"/>
+    </Style>
+    <Style Selector="Button.link">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+      <Setter Property="Foreground" Value="#1A57C6"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+    <Style Selector="TextBox.form-input">
+      <Setter Property="Height" Value="24"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="BorderBrush" Value="#C0C0C0"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="Padding" Value="6,0"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="IsHitTestVisible" Value="False"/>
+      <Setter Property="Focusable" Value="False"/>
+    </Style>
+    <Style Selector="Border.class-card">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="BorderBrush" Value="#D0D0D0"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="10"/>
+      <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+    <Style Selector="Border.class-card:pointerover">
+      <Setter Property="BorderBrush" Value="#1E88FF"/>
+      <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+    <Style Selector="Border.class-image">
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="2"/>
+      <Setter Property="CornerRadius" Value="10"/>
+    </Style>
+    <Style Selector="Border.class-card:pointerover Border.class-image">
+      <Setter Property="BorderBrush" Value="#1E88FF"/>
+    </Style>
+
+    <Style Selector="Border.course-card">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="CornerRadius" Value="10"/>
+      <Setter Property="Cursor" Value="Hand"/>
+    </Style>
+    <Style Selector="Border.course-image">
+      <Setter Property="BorderBrush" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="3"/>
+      <Setter Property="CornerRadius" Value="12"/>
+    </Style>
+    <Style Selector="Border.course-card:pointerover Border.course-image">
+      <Setter Property="BorderBrush" Value="#1E88FF"/>
+    </Style>
+    <Style Selector="Button.icon">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="Button.lecture-action">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Height" Value="28"/>
+      <Setter Property="Width" Value="140"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.lecture-action.online">
+      <Setter Property="BorderBrush" Value="#37A02C"/>
+      <Setter Property="Foreground" Value="#1B7F1B"/>
+    </Style>
+    <Style Selector="Button.lecture-action.offline">
+      <Setter Property="BorderBrush" Value="#D32F2F"/>
+      <Setter Property="Foreground" Value="#B71C1C"/>
+    </Style>
+    <Style Selector="Button.lecture-delete">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="#D32F2F"/>
+      <Setter Property="Foreground" Value="#D32F2F"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Height" Value="28"/>
+      <Setter Property="Width" Value="110"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.lecture-status">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="#B0B0B0"/>
+      <Setter Property="Foreground" Value="#666666"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="Height" Value="26"/>
+      <Setter Property="Width" Value="110"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="Button.lecture-download">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="BorderBrush" Value="#888888"/>
+      <Setter Property="Foreground" Value="#333333"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Height" Value="92"/>
+      <Setter Property="Width" Value="110"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+  </Window.Styles>
+
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="300"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- Left panel -->
+    <Border Grid.Column="0" Background="#FFFF00">
+      <Canvas>
+        <Border Width="180" Height="180"
+                Background="White"
+                CornerRadius="90"
+                ClipToBounds="True"
+                Canvas.Left="60" Canvas.Top="20">
+          <Image Source="avares://SimpleLoginApp/Assets/logo4.jpg"
+                 Stretch="UniformToFill"
+                 RenderOptions.BitmapInterpolationMode="HighQuality"/>
+        </Border>
+
+        <StackPanel Canvas.Left="0" Canvas.Top="240" Spacing="10">
+          <Button x:Name="IntroButton" Classes="nav" Click="ShowIntro">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Image Grid.Column="0" Width="40" Height="40"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Source="avares://SimpleLoginApp/Assets/icon_info.png"
+                     RenderOptions.BitmapInterpolationMode="HighQuality"/>
+              <TextBlock Grid.Column="1"
+                         VerticalAlignment="Center"
+                         Text="Gi&#x1EDB;i Thi&#x1EC7;u"/>
+            </Grid>
+          </Button>
+
+          <Button x:Name="AccountButton" Classes="nav" Click="ShowAccount">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Image Grid.Column="0" Width="40" Height="40"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Source="avares://SimpleLoginApp/Assets/icon_user.png"
+                     RenderOptions.BitmapInterpolationMode="HighQuality"/>
+              <TextBlock Grid.Column="1"
+                         VerticalAlignment="Center"
+                         Text="T&#x00E0;i Kho&#x1EA3;n"/>
+            </Grid>
+          </Button>
+
+          <Button x:Name="LessonButton" Classes="nav" Click="ShowLesson">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Image Grid.Column="0" Width="40" Height="40"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Source="avares://SimpleLoginApp/Assets/icon_book.png"
+                     RenderOptions.BitmapInterpolationMode="HighQuality"/>
+              <TextBlock Grid.Column="1"
+                         VerticalAlignment="Center"
+                         Text="Gi&#x00E1;o &#x00C1;n"/>
+            </Grid>
+          </Button>
+        </StackPanel>
+      </Canvas>
+    </Border>
+
+    <!-- Right panel -->
+    <Grid Grid.Column="1" Background="White">
+      <Border x:Name="IntroPanel" Background="White">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="110"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="160"/>
+          </Grid.RowDefinitions>
+
+          <StackPanel Grid.Row="0" Spacing="0">
+            <Border Height="60" Background="#DCDCDC">
+              <TextBlock Text="Ch&#x00E0;o M&#x1EEB;ng B&#x1EA1;n &#x0110;&#x1EBF;n V&#x1EDB;i KIDO"
+                         FontSize="20"
+                         FontWeight="Bold"
+                         TextAlignment="Center"
+                         VerticalAlignment="Center"/>
+            </Border>
+            <Border Height="45" Background="#4CAF50">
+              <TextBlock Text="C&#x00D4;NG TY C&#x1ED4; PH&#x1EA6;N GI&#x00C1;O D&#x1EE4;C KHOA H&#x1ECC;C C&#x00D4;NG NGH&#x1EC6; ICHI SKILL"
+                         FontSize="14"
+                         FontWeight="Bold"
+                         Foreground="White"
+                         TextAlignment="Center"
+                         VerticalAlignment="Center"/>
+            </Border>
+          </StackPanel>
+
+          <Border Grid.Row="1" Background="White">
+            <Grid>
+              <Image x:Name="IntroSlide"
+                     Source="avares://SimpleLoginApp/Assets/slide2.jpg"
+                     Stretch="Uniform"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     RenderOptions.BitmapInterpolationMode="HighQuality"/>
+            </Grid>
+          </Border>
+
+          <Border Grid.Row="2" Background="#DCE6F5">
+            <Grid ColumnDefinitions="40*,30*,30*">
+              <StackPanel Grid.Column="0" Margin="10" Spacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Image Width="20" Height="20"
+                         Source="avares://SimpleLoginApp/Assets/icon_address.png"
+                         RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                  <TextBlock Text="Dia chi: 231/1 Nguyen Phuc Chu, Phuong 15, Quan Tan Binh"
+                             FontSize="13"
+                             TextWrapping="Wrap"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Image Width="20" Height="20"
+                         Source="avares://SimpleLoginApp/Assets/icon_phone.png"
+                         RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                  <TextBlock Text="Dien thoai: 0707 868 600 - 0789 636 979"
+                             FontSize="13"
+                             TextWrapping="Wrap"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Image Width="20" Height="20"
+                         Source="avares://SimpleLoginApp/Assets/icon_mail.png"
+                         RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                  <TextBlock Text="Email: hcns@IchiSkillManager.edu.vn"
+                             FontSize="13"
+                             TextWrapping="Wrap"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Image Width="20" Height="20"
+                         Source="avares://SimpleLoginApp/Assets/Icon_www.png"
+                         RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                  <TextBlock Text="Website: https://IchiSkillManager.edu.vn"
+                             FontSize="13"
+                             TextWrapping="Wrap"/>
+                </StackPanel>
+              </StackPanel>
+
+              <Border Grid.Column="1" Margin="10" Background="Transparent">
+                <Image Source="avares://SimpleLoginApp/Assets/hopdong.jpg"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
+              </Border>
+
+              <Grid Grid.Column="2">
+                <StackPanel HorizontalAlignment="Right"
+                            Margin="0,30,20,0"
+                            Spacing="8">
+                  <Button Classes="link">
+                    <TextBlock Text="Chinh Sua Hinh Anh Gioi Thieu"
+                               TextDecorations="Underline"/>
+                  </Button>
+                  <Button Classes="link">
+                    <TextBlock Text="Chinh Sua Thong Tin Cong Ty"
+                               TextDecorations="Underline"/>
+                  </Button>
+                </StackPanel>
+              </Grid>
+            </Grid>
+          </Border>
+        </Grid>
+      </Border>
+
+      <Border x:Name="AccountPanel" Background="#F4F9EA" IsVisible="False">
+        <Grid Background="White">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="45"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+
+          <Border Grid.Row="0" Background="#E6E6E6">
+            <TextBlock Text="Ch&#x00E0;o M&#x1EEB;ng B&#x1EA1;n &#x0110;&#x1EBF;n V&#x1EDB;i KIDO"
+                       FontSize="14"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Margin="15,0,0,0"/>
+          </Border>
+
+          <Border Grid.Row="1" Background="#92D050">
+            <TextBlock Text="Th&#x00F4;ng Tin T&#x00E0;i Kho&#x1EA3;n"
+                       FontSize="13"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Margin="15,0,0,0"/>
+          </Border>
+
+          <ScrollViewer Grid.Row="2">
+            <StackPanel Margin="20" Spacing="12">
+              <Border BorderBrush="#C0C0C0" BorderThickness="1" Background="White" Padding="10">
+                <StackPanel Spacing="8">
+                  <TextBlock Text="Th&#x00F4;ng Tin T&#x00E0;i Kho&#x1EA3;n"
+                             FontWeight="Bold"/>
+                  <Grid ColumnDefinitions="18*,32*,18*,32*"
+                        RowDefinitions="40,40,40,40">
+                  <TextBlock Grid.Row="0" Grid.Column="0" Text="M&#x00E3; T&#x00E0;i Kho&#x1EA3;n:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="AccountIdBox" Grid.Row="0" Grid.Column="1" Classes="form-input" IsReadOnly="True"/>
+                  <TextBlock Grid.Row="0" Grid.Column="2" Text="Lo&#x1EA1;i T&#x00E0;i Kho&#x1EA3;n:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="AccountTypeBox" Grid.Row="0" Grid.Column="3" Classes="form-input" IsReadOnly="True"/>
+
+                  <TextBlock Grid.Row="1" Grid.Column="0" Text="T&#x00E0;i Kho&#x1EA3;n:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="AccountUsernameBox" Grid.Row="1" Grid.Column="1" Classes="form-input" IsReadOnly="True"/>
+                  <TextBlock Grid.Row="1" Grid.Column="2" Text="Ng&#x00E0;y K&#x00ED;ch Ho&#x1EA1;t:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="AccountActivatedBox" Grid.Row="1" Grid.Column="3" Classes="form-input" IsReadOnly="True"/>
+
+                  <TextBlock Grid.Row="2" Grid.Column="0" Text="T&#x00EA;n T&#x00E0;i Kho&#x1EA3;n:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="AccountFullNameBox" Grid.Row="2" Grid.Column="1" Classes="form-input" IsReadOnly="True"/>
+                  <TextBlock Grid.Row="2" Grid.Column="2" Text="Ng&#x00E0;y H&#x1EBF;t H&#x1EA1;n:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="AccountExpiresBox" Grid.Row="2" Grid.Column="3" Classes="form-input" IsReadOnly="True"/>
+
+                  <TextBlock Grid.Row="3" Grid.Column="0" Text="Email:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="AccountEmailBox" Grid.Row="3" Grid.Column="1" Classes="form-input" IsReadOnly="True"/>
+                  <Button Grid.Row="3" Grid.Column="3" Classes="link" HorizontalAlignment="Left"
+                          IsHitTestVisible="False" Focusable="False">
+                    <TextBlock Text="&#x0110;&#x1ED5;i M&#x1EAD;t Kh&#x1EA9;u" TextDecorations="Underline"/>
+                  </Button>
+                  </Grid>
+                </StackPanel>
+              </Border>
+
+              <Border BorderBrush="#C0C0C0" BorderThickness="1" Background="White" Padding="10">
+                <StackPanel Spacing="8">
+                  <TextBlock Text="Th&#x00F4;ng Tin B&#x1EA3;n Quy&#x1EC1;n"
+                             FontWeight="Bold"/>
+                  <Grid ColumnDefinitions="18*,32*,18*,32*"
+                        RowDefinitions="40,40,40,40">
+                  <TextBlock Grid.Row="0" Grid.Column="0" Text="M&#x00E3; S&#x1EA3;n Ph&#x1EA9;m:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="LicenseProductIdBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" Classes="form-input" IsReadOnly="True"/>
+
+                  <TextBlock Grid.Row="1" Grid.Column="0" Text="Ng&#x00E0;y K&#x00ED;ch Ho&#x1EA1;t:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="LicenseActivatedBox" Grid.Row="1" Grid.Column="1" Classes="form-input" IsReadOnly="True"/>
+                  <TextBlock Grid.Row="1" Grid.Column="2" Text="Ng&#x00E0;y H&#x1EBF;t H&#x1EA1;n:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="LicenseExpiresBox" Grid.Row="1" Grid.Column="3" Classes="form-input" IsReadOnly="True"/>
+
+                  <TextBlock Grid.Row="2" Grid.Column="0" Text="S&#x1ED1; Ng&#x00E0;y &#x0110;&#x0103;ng K&#x00FD;:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="LicenseDaysBox" Grid.Row="2" Grid.Column="1" Classes="form-input" IsReadOnly="True"/>
+                  <TextBlock Grid.Row="2" Grid.Column="2" Text="Lo&#x1EA1;i S&#x1EA3;n Ph&#x1EA9;m:" VerticalAlignment="Center"/>
+                  <TextBox x:Name="LicenseProductTypeBox" Grid.Row="2" Grid.Column="3" Classes="form-input" IsReadOnly="True"/>
+
+                  <Button Grid.Row="3" Grid.Column="0" Classes="link" HorizontalAlignment="Left"
+                          IsHitTestVisible="False" Focusable="False">
+                    <TextBlock Text="&#x0110;&#x1ED5;i M&#x00E3; K&#x00ED;ch Ho&#x1EA1;t" TextDecorations="Underline"/>
+                  </Button>
+                  </Grid>
+                </StackPanel>
+              </Border>
+
+              <TextBlock x:Name="AccountStatus"
+                         Foreground="#B00020"
+                         FontSize="12"/>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+
+      <Border x:Name="LessonPanel" Background="#EEF7FF" IsVisible="False">
+        <Grid Background="White">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="45"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+
+          <Border Grid.Row="0" Background="#E6E6E6">
+            <TextBlock Text="Ch&#x00E0;o M&#x1EEB;ng B&#x1EA1;n &#x0110;&#x1EBF;n V&#x1EDB;i KIDO"
+                       FontSize="14"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Margin="15,0,0,0"/>
+          </Border>
+
+          <Border Grid.Row="1" Background="#92D050">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock x:Name="LessonHeaderText"
+                         Text="Gi&#x00E1;o &#x00C1;n"
+                         FontSize="13"
+                         FontWeight="Bold"
+                         VerticalAlignment="Center"
+                         Margin="15,0,0,0"/>
+              <Button x:Name="LessonBackButton"
+                      Classes="icon"
+                      Width="30"
+                      Height="30"
+                      Margin="0,0,15,0"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Right"
+                      IsVisible="False"
+                      Click="HandleLessonBack">
+                <Image Source="avares://SimpleLoginApp/Assets/icon_back1.png"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapInterpolationMode="HighQuality"/>
+              </Button>
+            </Grid>
+          </Border>
+
+          <Grid Grid.Row="2">
+            <Border x:Name="LessonClassView">
+              <ScrollViewer>
+                <StackPanel Margin="20">
+                  <WrapPanel x:Name="LessonItemsPanel"
+                             Orientation="Horizontal"
+                             ItemWidth="240"
+                             ItemHeight="240"
+                             HorizontalAlignment="Left"/>
+                </StackPanel>
+              </ScrollViewer>
+            </Border>
+
+            <Border x:Name="LessonCourseView" IsVisible="False">
+              <ScrollViewer>
+                <StackPanel Margin="20">
+                  <WrapPanel x:Name="CourseItemsPanel"
+                             Orientation="Horizontal"
+                             ItemWidth="240"
+                             ItemHeight="240"
+                             HorizontalAlignment="Left"/>
+                </StackPanel>
+              </ScrollViewer>
+            </Border>
+
+            <Border x:Name="LessonLectureView" IsVisible="False">
+              <ScrollViewer>
+                <StackPanel x:Name="LectureItemsPanel"
+                            Margin="20"
+                            Spacing="12"/>
+              </ScrollViewer>
+            </Border>
+
+            <TextBlock x:Name="LessonStatus"
+                       Foreground="#B00020"
+                       FontSize="12"
+                       Margin="20"
+                       VerticalAlignment="Top"
+                       HorizontalAlignment="Left"/>
+          </Grid>
+        </Grid>
+      </Border>
+    </Grid>
+  </Grid>
+</Window>

@@ -66,6 +66,7 @@ C:\Users\Admin\code\work\SimpleLoginApp\obj\Debug\net10.0\SimpleLoginApp.Generat
 C:\Users\Admin\code\work\SimpleLoginApp\obj\Debug\net10.0\SimpleLoginApp.AssemblyInfoInputs.cache
 C:\Users\Admin\code\work\SimpleLoginApp\obj\Debug\net10.0\SimpleLoginApp.AssemblyInfo.cs
 C:\Users\Admin\code\work\SimpleLoginApp\obj\Debug\net10.0\SimpleLoginApp.csproj.CoreCompileInputs.cache
+C:\Users\Admin\code\work\SimpleLoginApp\obj\Debug\net10.0\SimpleLoginApp.sourcelink.json
 C:\Users\Admin\code\work\SimpleLoginApp\obj\Debug\net10.0\SimpleLo.32FA6CA2.Up2Date
 C:\Users\Admin\code\work\SimpleLoginApp\obj\Debug\net10.0\SimpleLoginApp.dll
 C:\Users\Admin\code\work\SimpleLoginApp\obj\Debug\net10.0\refint\SimpleLoginApp.dll

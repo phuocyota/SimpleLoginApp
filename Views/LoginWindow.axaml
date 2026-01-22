@@ -1,0 +1,195 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="SimpleLoginApp.Views.LoginWindow"
+        Width="1400" Height="750"
+        CanResize="False"
+        UseLayoutRounding="True"
+        WindowStartupLocation="CenterScreen"
+        KeyDown="HandleLoginKey"
+        Title="Đăng Nhập Hệ Thống"
+        FontFamily="Arial">
+
+  <!-- STYLE: ép control giống WinForms -->
+  <Window.Styles>
+
+    <!-- TextBox: trắng, vuông, border 1px, font Arial 16, height gần WinForms -->
+    <Style Selector="TextBox.wf-input">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="BorderBrush" Value="#2B2B2B"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="Padding" Value="6,4"/>
+      <Setter Property="FontFamily" Value="Arial"/>
+      <Setter Property="FontSize" Value="16"/>
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="Foreground" Value="Black"/>
+    </Style>
+
+    <!-- Watermark (placeholder) -->
+    <Style Selector="TextBox.wf-input /template/ TextBlock#PART_Watermark">
+      <Setter Property="Foreground" Value="#808080"/>
+    </Style>
+
+    <!-- CheckBox: giống WinForms -->
+    <Style Selector="CheckBox.wf-check">
+      <Setter Property="FontFamily" Value="Arial"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Foreground" Value="Black"/>
+    </Style>
+
+    <!-- Button Login: vàng + viền đen dày + vuông -->
+    <Style Selector="Button.wf-login">
+      <Setter Property="Background" Value="#FCD009"/>
+      <Setter Property="Foreground" Value="Black"/>
+      <Setter Property="BorderBrush" Value="Black"/>
+      <Setter Property="BorderThickness" Value="3"/>
+      <Setter Property="CornerRadius" Value="0"/>
+      <Setter Property="FontFamily" Value="Arial"/>
+      <Setter Property="FontSize" Value="20"/>
+      <Setter Property="FontWeight" Value="Bold"/>
+    </Style>
+
+    <!-- Button icon (mắt): trong suốt như PictureBox click -->
+    <Style Selector="Button.wf-iconbtn">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="0"/>
+    </Style>
+
+  </Window.Styles>
+
+  <!-- ROOT: giống Dock Left 450px + Fill -->
+  <Grid x:Name="Root">
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="450"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <!-- ================= LEFT PANEL ================= -->
+    <Border Grid.Column="0" Background="#F1C703">
+      <Canvas>
+
+        <!-- Logo tròn nền trắng (WinForms: 75,30 size 300) -->
+        <Border Width="300" Height="300"
+                Background="White"
+                CornerRadius="150"
+                ClipToBounds="True"
+                Canvas.Left="75" Canvas.Top="30">
+          <Image Source="avares://SimpleLoginApp/Assets/logo4.jpg"
+                 Stretch="UniformToFill"
+                 RenderOptions.BitmapInterpolationMode="HighQuality"/>
+        </Border>
+        <!-- Company label (0,350) size (450,150) -->
+        <TextBlock Canvas.Left="0" Canvas.Top="370"
+                   Width="450" Height="150"
+                   TextAlignment="Center"
+                   FontFamily="Arial"
+                   FontSize="20"
+                   FontWeight="Bold"
+                   Foreground="#990000"
+                   Text="CÔNG TY CỔ PHẦN GIÁO DỤC&#x0a;KHOA HỌC CÔNG NGHỆ&#x0a;ICHI SKILL"/>
+        <!-- Copyright (0,710) size (450,40) -->
+        <TextBlock Canvas.Left="0" Canvas.Top="710"
+                   Width="450" Height="40"
+                   TextAlignment="Center"
+                   FontFamily="Arial"
+                   FontSize="14"
+                   FontStyle="Italic"
+                   Foreground="#990000"
+                   Text="Copyright (c) PB.BaoGa(TM), All rights reserved."/>
+      </Canvas>
+    </Border>
+    <!-- ================= RIGHT PANEL ================= -->
+    <Border Grid.Column="1" Background="#77A72C">
+      <Canvas>
+        <!-- Title (260,40) -->
+        <TextBlock Canvas.Left="300" Canvas.Top="40"
+                   Text="Đăng Nhập"
+                   FontFamily="Arial"
+                   FontSize="40"
+                   FontWeight="Bold"
+                   Foreground="Black"
+                   TextAlignment="Center"/>
+        <!-- Icon user (170,150) 40x40 -->
+        <Image Canvas.Left="170" Canvas.Top="150"
+               Width="40" Height="40"
+               Source="avares://SimpleLoginApp/Assets/icon_info.png"
+               Stretch="Uniform"
+               RenderOptions.BitmapInterpolationMode="HighQuality"/>
+        <!-- Username (220,150) width 350 -->
+        <TextBox x:Name="UsernameBox"
+                 Classes="wf-input"
+                 Canvas.Left="220" Canvas.Top="155"
+                 Width="350"
+                 Watermark="Tên đăng nhập"/>
+        <!-- Icon pass (170,220) -->
+        <Image Canvas.Left="170" Canvas.Top="220"
+               Width="40" Height="40"
+               Source="avares://SimpleLoginApp/Assets/icon_lock.png"
+               Stretch="Uniform"
+               RenderOptions.BitmapInterpolationMode="HighQuality"/>
+        <!-- Password (220,220) width 350 -->
+        <TextBox x:Name="PasswordBox"
+                 Classes="wf-input"
+                 Canvas.Left="220" Canvas.Top="225"
+                 Width="350"
+                 Watermark="Mật khẩu"
+                 PasswordChar="*"/>
+        <!-- Eye icon (580,220) 40x40 - click -->
+        <Button x:Name="EyeButton"
+                Classes="wf-iconbtn"
+                Canvas.Left="580" Canvas.Top="220"
+                Width="40" Height="40"
+                Click="TogglePassword">
+          <Image x:Name="EyeIcon"
+                 Source="avares://SimpleLoginApp/Assets/icon_eye.png"
+                 Stretch="Uniform"
+                 RenderOptions.BitmapInterpolationMode="HighQuality"/>
+        </Button>
+        <!-- Remember (220,280) bold -->
+        <CheckBox x:Name="RememberCheck"
+                    FontWeight="Bold"
+                    Classes="wf-check"
+                    Canvas.Left="220" Canvas.Top="280"
+                    Content="Ghi Nhớ"/>
+        <!-- Login Button (300,330) 220x60, center -->
+        <Button x:Name="LoginButton"
+                Classes="wf-login"
+                Canvas.Left="300" Canvas.Top="330"
+                Width="220" Height="60"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Content="Đăng Nhập"
+                Click="HandleLogin"/>
+        <!-- Status (260,410) -->
+        <TextBlock x:Name="StatusLabel"
+                   Canvas.Left="260" Canvas.Top="410"
+                   Text="Kết Nối Máy Chủ Sẵn Sàng"
+                   FontFamily="Arial"
+                   FontSize="14"
+                   FontWeight="Bold"
+                   Foreground="Black"/>
+        <!-- Info (150,460) -->
+        <TextBlock x:Name="InfoLabel"
+                   Canvas.Left="170" Canvas.Top="460"
+                   FontFamily="Arial"
+                   FontSize="16"
+                   Foreground="Black"
+                   Text="- Sản phẩm cung cấp bởi: ICHI SKILL&#x0a;- Hỗ trợ: Ultra Viewer&#x0a;- Điện thoại: 0707 868 600 - 0789 636 979&#x0a;- Email: hcns@IchiSkillManager.edu.vn&#x0a;- Địa chỉ: 231/1 Nguyễn Phúc Chu, Phường 15, Quận Tân Bình"/>
+        <!-- FB (330,620) 45x45 -->
+        <Image Canvas.Left="330" Canvas.Top="620"
+                Width="45" Height="45"
+                Source="avares://SimpleLoginApp/Assets/icon_facebook.png"
+                Stretch="Uniform"
+                RenderOptions.BitmapInterpolationMode="HighQuality"/>
+        <!-- WWW (390,620) 45x45 -->
+        <Image Canvas.Left="390" Canvas.Top="620"
+                Width="45" Height="45"
+                Source="avares://SimpleLoginApp/Assets/Icon_www.png"
+                Stretch="Uniform"
+                RenderOptions.BitmapInterpolationMode="HighQuality"/>
+      </Canvas>
+    </Border>
+  </Grid>
+</Window>
+

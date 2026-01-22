@@ -26,5 +26,8 @@ build_property.EnableCodeStyleSeverity =
 [C:/Users/Admin/code/work/SimpleLoginApp/App.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
 
-[C:/Users/Admin/code/work/SimpleLoginApp/Views/MainWindow.axaml]
+[C:/Users/Admin/code/work/SimpleLoginApp/Views/DashboardWindow.axaml]
+build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
+
+[C:/Users/Admin/code/work/SimpleLoginApp/Views/LoginWindow.axaml]
 build_metadata.AdditionalFiles.SourceItemGroup = AvaloniaXaml
