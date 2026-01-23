@@ -1,0 +1,10 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:avaloniaPdfViewer="clr-namespace:AvaloniaPdfViewer;assembly=AvaloniaPdfViewer"
+        x:Class="SimpleLoginApp.Views.LecturePdfWindow"
+        WindowState="Maximized"
+        Title="PDF">
+  <Grid>
+    <avaloniaPdfViewer:PdfViewer x:Name="PdfViewer" />
+  </Grid>
+</Window>

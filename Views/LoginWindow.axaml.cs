@@ -25,8 +25,8 @@ public partial class LoginWindow : Window
 
         // Nếu bạn có icon_eye_off.png thì bật 2 dòng dưới và đổi path đúng:
         // EyeIcon.Source = new Avalonia.Media.Imaging.Bitmap(_showPassword
-        //     ? "avares://SimpleLoginApp/Assets/icon_eye_off.png"
-        //     : "avares://SimpleLoginApp/Assets/icon_eye.png");
+        //     ? "avares://KidoTeacher/Assets/icon_eye_off.png"
+        //     : "avares://KidoTeacher/Assets/icon_eye.png");
     }
 
     private async void HandleLogin(object? sender, RoutedEventArgs e)

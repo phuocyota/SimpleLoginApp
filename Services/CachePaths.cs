@@ -31,4 +31,28 @@ public static class CachePaths
         Directory.CreateDirectory(LecturePath);
         return Path.Combine(LecturePath, lectureId);
     }
+
+    public static string GetLectureDirectory()
+    {
+        Directory.CreateDirectory(LecturePath);
+        return LecturePath;
+    }
+
+    public static string GetLecturePath(string lectureId, string? extension)
+    {
+        Directory.CreateDirectory(LecturePath);
+        return Path.Combine(LecturePath, lectureId + NormalizeExtension(extension));
+    }
+
+    private static string NormalizeExtension(string? extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            return string.Empty;
+        }
+
+        return extension.StartsWith(".", StringComparison.Ordinal)
+            ? extension
+            : "." + extension;
+    }
 }

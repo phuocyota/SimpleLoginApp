@@ -2,10 +2,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="SimpleLoginApp.Views.DashboardWindow"
         CanResize="True"
+        Icon="avares://KidoTeacher/Assets/logo4-256.png"
         UseLayoutRounding="True"
         WindowStartupLocation="CenterScreen"
         WindowState="Maximized"
-        Title="KIDO"
+        Title="Kido Teacher"
         FontFamily="Segoe UI">
 
   <Window.Styles>
@@ -153,7 +154,7 @@
                 CornerRadius="90"
                 ClipToBounds="True"
                 Canvas.Left="60" Canvas.Top="20">
-          <Image Source="avares://SimpleLoginApp/Assets/logo4.jpg"
+          <Image Source="avares://KidoTeacher/Assets/logo4.jpg"
                  Stretch="UniformToFill"
                  RenderOptions.BitmapInterpolationMode="HighQuality"/>
         </Border>
@@ -168,7 +169,7 @@
               <Image Grid.Column="0" Width="40" Height="40"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center"
-                     Source="avares://SimpleLoginApp/Assets/icon_info.png"
+                     Source="avares://KidoTeacher/Assets/icon_info.png"
                      RenderOptions.BitmapInterpolationMode="HighQuality"/>
               <TextBlock Grid.Column="1"
                          VerticalAlignment="Center"
@@ -185,7 +186,7 @@
               <Image Grid.Column="0" Width="40" Height="40"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center"
-                     Source="avares://SimpleLoginApp/Assets/icon_user.png"
+                     Source="avares://KidoTeacher/Assets/icon_user.png"
                      RenderOptions.BitmapInterpolationMode="HighQuality"/>
               <TextBlock Grid.Column="1"
                          VerticalAlignment="Center"
@@ -202,7 +203,7 @@
               <Image Grid.Column="0" Width="40" Height="40"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center"
-                     Source="avares://SimpleLoginApp/Assets/icon_book.png"
+                     Source="avares://KidoTeacher/Assets/icon_book.png"
                      RenderOptions.BitmapInterpolationMode="HighQuality"/>
               <TextBlock Grid.Column="1"
                          VerticalAlignment="Center"
@@ -244,7 +245,7 @@
           <Border Grid.Row="1" Background="White">
             <Grid>
               <Image x:Name="IntroSlide"
-                     Source="avares://SimpleLoginApp/Assets/slide2.jpg"
+                     Source="avares://KidoTeacher/Assets/slide2.jpg"
                      Stretch="Uniform"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center"
@@ -257,7 +258,7 @@
               <StackPanel Grid.Column="0" Margin="10" Spacing="6">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <Image Width="20" Height="20"
-                         Source="avares://SimpleLoginApp/Assets/icon_address.png"
+                         Source="avares://KidoTeacher/Assets/icon_address.png"
                          RenderOptions.BitmapInterpolationMode="HighQuality"/>
                   <TextBlock Text="Dia chi: 231/1 Nguyen Phuc Chu, Phuong 15, Quan Tan Binh"
                              FontSize="13"
@@ -265,7 +266,7 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <Image Width="20" Height="20"
-                         Source="avares://SimpleLoginApp/Assets/icon_phone.png"
+                         Source="avares://KidoTeacher/Assets/icon_phone.png"
                          RenderOptions.BitmapInterpolationMode="HighQuality"/>
                   <TextBlock Text="Dien thoai: 0707 868 600 - 0789 636 979"
                              FontSize="13"
@@ -273,7 +274,7 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <Image Width="20" Height="20"
-                         Source="avares://SimpleLoginApp/Assets/icon_mail.png"
+                         Source="avares://KidoTeacher/Assets/icon_mail.png"
                          RenderOptions.BitmapInterpolationMode="HighQuality"/>
                   <TextBlock Text="Email: hcns@IchiSkillManager.edu.vn"
                              FontSize="13"
@@ -281,7 +282,7 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Spacing="8">
                   <Image Width="20" Height="20"
-                         Source="avares://SimpleLoginApp/Assets/Icon_www.png"
+                         Source="avares://KidoTeacher/Assets/Icon_www.png"
                          RenderOptions.BitmapInterpolationMode="HighQuality"/>
                   <TextBlock Text="Website: https://IchiSkillManager.edu.vn"
                              FontSize="13"
@@ -290,7 +291,7 @@
               </StackPanel>
 
               <Border Grid.Column="1" Margin="10" Background="Transparent">
-                <Image Source="avares://SimpleLoginApp/Assets/hopdong.jpg"
+                <Image Source="avares://KidoTeacher/Assets/hopdong.jpg"
                        Stretch="Uniform"
                        RenderOptions.BitmapInterpolationMode="HighQuality"/>
               </Border>
@@ -439,7 +440,7 @@
                       HorizontalAlignment="Right"
                       IsVisible="False"
                       Click="HandleLessonBack">
-                <Image Source="avares://SimpleLoginApp/Assets/icon_back1.png"
+                <Image Source="avares://KidoTeacher/Assets/icon_back1.png"
                        Stretch="Uniform"
                        RenderOptions.BitmapInterpolationMode="HighQuality"/>
               </Button>

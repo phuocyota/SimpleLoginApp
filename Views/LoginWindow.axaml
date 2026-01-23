@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="SimpleLoginApp.Views.LoginWindow"
         Width="1400" Height="750"
+        Icon="avares://KidoTeacher/Assets/logo4-256.png"
         CanResize="False"
         UseLayoutRounding="True"
         WindowStartupLocation="CenterScreen"
@@ -75,7 +76,7 @@
                 CornerRadius="150"
                 ClipToBounds="True"
                 Canvas.Left="75" Canvas.Top="30">
-          <Image Source="avares://SimpleLoginApp/Assets/logo4.jpg"
+          <Image Source="avares://KidoTeacher/Assets/logo4.jpg"
                  Stretch="UniformToFill"
                  RenderOptions.BitmapInterpolationMode="HighQuality"/>
         </Border>
@@ -113,7 +114,7 @@
         <!-- Icon user (170,150) 40x40 -->
         <Image Canvas.Left="170" Canvas.Top="150"
                Width="40" Height="40"
-               Source="avares://SimpleLoginApp/Assets/icon_info.png"
+               Source="avares://KidoTeacher/Assets/icon_info.png"
                Stretch="Uniform"
                RenderOptions.BitmapInterpolationMode="HighQuality"/>
         <!-- Username (220,150) width 350 -->
@@ -125,7 +126,7 @@
         <!-- Icon pass (170,220) -->
         <Image Canvas.Left="170" Canvas.Top="220"
                Width="40" Height="40"
-               Source="avares://SimpleLoginApp/Assets/icon_lock.png"
+               Source="avares://KidoTeacher/Assets/icon_lock.png"
                Stretch="Uniform"
                RenderOptions.BitmapInterpolationMode="HighQuality"/>
         <!-- Password (220,220) width 350 -->
@@ -142,7 +143,7 @@
                 Width="40" Height="40"
                 Click="TogglePassword">
           <Image x:Name="EyeIcon"
-                 Source="avares://SimpleLoginApp/Assets/icon_eye.png"
+                 Source="avares://KidoTeacher/Assets/icon_eye.png"
                  Stretch="Uniform"
                  RenderOptions.BitmapInterpolationMode="HighQuality"/>
         </Button>
@@ -179,17 +180,16 @@
         <!-- FB (330,620) 45x45 -->
         <Image Canvas.Left="330" Canvas.Top="620"
                 Width="45" Height="45"
-                Source="avares://SimpleLoginApp/Assets/icon_facebook.png"
+                Source="avares://KidoTeacher/Assets/icon_facebook.png"
                 Stretch="Uniform"
                 RenderOptions.BitmapInterpolationMode="HighQuality"/>
         <!-- WWW (390,620) 45x45 -->
         <Image Canvas.Left="390" Canvas.Top="620"
                 Width="45" Height="45"
-                Source="avares://SimpleLoginApp/Assets/Icon_www.png"
+                Source="avares://KidoTeacher/Assets/Icon_www.png"
                 Stretch="Uniform"
                 RenderOptions.BitmapInterpolationMode="HighQuality"/>
       </Canvas>
     </Border>
   </Grid>
 </Window>
-

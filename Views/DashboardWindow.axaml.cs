@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -104,11 +107,11 @@ public partial class DashboardWindow : Window
     {
         var slideUris = new[]
         {
-            "avares://SimpleLoginApp/Assets/slide2.jpg",
-            "avares://SimpleLoginApp/Assets/slide8.jpg",
-            "avares://SimpleLoginApp/Assets/slide9.png",
-            "avares://SimpleLoginApp/Assets/slide10.png",
-            "avares://SimpleLoginApp/Assets/slide11.png",
+            "avares://KidoTeacher/Assets/slide2.jpg",
+            "avares://KidoTeacher/Assets/slide8.jpg",
+            "avares://KidoTeacher/Assets/slide9.png",
+            "avares://KidoTeacher/Assets/slide10.png",
+            "avares://KidoTeacher/Assets/slide11.png",
         };
 
         foreach (var uri in slideUris)
@@ -348,7 +351,7 @@ public partial class DashboardWindow : Window
             return _defaultLessonBitmap;
         }
 
-        using var stream = AssetLoader.Open(new Uri("avares://SimpleLoginApp/Assets/lessondefault.png"));
+        using var stream = AssetLoader.Open(new Uri("avares://KidoTeacher/Assets/lessondefault.png"));
         _defaultLessonBitmap = new Bitmap(stream);
         return _defaultLessonBitmap;
     }
@@ -392,12 +395,18 @@ public partial class DashboardWindow : Window
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(cachePath) || !File.Exists(cachePath))
+            if (string.IsNullOrWhiteSpace(cachePath))
             {
                 return null;
             }
 
-            using var stream = File.OpenRead(cachePath);
+            var resolvedPath = ResolveCachedFilePath(cachePath);
+            if (resolvedPath == null)
+            {
+                return null;
+            }
+
+            using var stream = File.OpenRead(resolvedPath);
             return new Bitmap(stream);
         }
         catch
@@ -416,11 +425,18 @@ public partial class DashboardWindow : Window
         try
         {
             var uri = BuildImageUri(currentImage);
-            var bytes = await ImageClient.GetByteArrayAsync(uri);
+            using var response = await ImageClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+            var bytes = await response.Content.ReadAsByteArrayAsync();
 
             if (!string.IsNullOrWhiteSpace(cachePath))
             {
-                await File.WriteAllBytesAsync(cachePath, bytes);
+                var extension = ResolveImageFileExtension(uri, response);
+                var targetPath = string.IsNullOrWhiteSpace(extension)
+                    ? cachePath
+                    : Path.ChangeExtension(cachePath, extension);
+                DeleteCacheFilesForBasePath(cachePath);
+                await File.WriteAllBytesAsync(targetPath, bytes);
             }
 
             using var stream = new MemoryStream(bytes);
@@ -429,6 +445,99 @@ public partial class DashboardWindow : Window
         catch
         {
             return null;
+        }
+    }
+
+    private static string? ResolveCachedFilePath(string cachePath)
+    {
+        if (File.Exists(cachePath))
+        {
+            var info = new FileInfo(cachePath);
+            return info.Length > 0 ? cachePath : null;
+        }
+
+        var directory = Path.GetDirectoryName(cachePath);
+        var baseName = Path.GetFileName(cachePath);
+        if (string.IsNullOrWhiteSpace(directory) || string.IsNullOrWhiteSpace(baseName))
+        {
+            return null;
+        }
+
+        if (!Directory.Exists(directory))
+        {
+            return null;
+        }
+
+        foreach (var file in Directory.EnumerateFiles(directory, $"{baseName}*"))
+        {
+            var info = new FileInfo(file);
+            if (info.Exists && info.Length > 0)
+            {
+                return file;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? ResolveImageFileExtension(Uri imageUri, HttpResponseMessage response)
+    {
+        var contentDisposition = response.Content.Headers.ContentDisposition;
+        var fileName = contentDisposition?.FileNameStar ?? contentDisposition?.FileName;
+        if (!string.IsNullOrWhiteSpace(fileName))
+        {
+            var trimmed = fileName.Trim().Trim('"');
+            var ext = Path.GetExtension(trimmed);
+            if (!string.IsNullOrWhiteSpace(ext))
+            {
+                return ext;
+            }
+        }
+
+        var urlExtension = Path.GetExtension(imageUri.LocalPath);
+        if (!string.IsNullOrWhiteSpace(urlExtension))
+        {
+            return urlExtension;
+        }
+
+        var mediaType = response.Content.Headers.ContentType?.MediaType;
+        return mediaType switch
+        {
+            "image/jpeg" => ".jpg",
+            "image/jpg" => ".jpg",
+            "image/png" => ".png",
+            "image/gif" => ".gif",
+            "image/webp" => ".webp",
+            "image/bmp" => ".bmp",
+            "image/tiff" => ".tiff",
+            _ => null,
+        };
+    }
+
+    private static void DeleteCacheFilesForBasePath(string cachePath)
+    {
+        try
+        {
+            var directory = Path.GetDirectoryName(cachePath);
+            var baseName = Path.GetFileName(cachePath);
+            if (string.IsNullOrWhiteSpace(directory) || string.IsNullOrWhiteSpace(baseName))
+            {
+                return;
+            }
+
+            if (!Directory.Exists(directory))
+            {
+                return;
+            }
+
+            foreach (var file in Directory.EnumerateFiles(directory, $"{baseName}*"))
+            {
+                File.Delete(file);
+            }
+        }
+        catch
+        {
+            // Ignore cache cleanup failures.
         }
     }
 
@@ -709,9 +818,12 @@ public partial class DashboardWindow : Window
             FontWeight = FontWeight.Bold,
             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
         });
-        offlineGroup.Children.Add(MakeLectureButton("Gi\u00E1o \u00E1n PDF", "lecture-action offline"));
-        offlineGroup.Children.Add(MakeLectureButton("Video d\u1EA1y m\u1EABu", "lecture-action offline"));
-        offlineGroup.Children.Add(MakeLectureButton("B\u00E0i gi\u1EA3ng E-Learning", "lecture-action offline"));
+        var offlinePdfButton = MakeLectureButton("Gi\u00E1o \u00E1n PDF", "lecture-action offline");
+        var offlineVideoButton = MakeLectureButton("Video d\u1EA1y m\u1EABu", "lecture-action offline");
+        var offlineElearningButton = MakeLectureButton("B\u00E0i gi\u1EA3ng E-Learning", "lecture-action offline");
+        offlineGroup.Children.Add(offlinePdfButton);
+        offlineGroup.Children.Add(offlineVideoButton);
+        offlineGroup.Children.Add(offlineElearningButton);
 
         var statusGroup = new StackPanel
         {
@@ -746,17 +858,27 @@ public partial class DashboardWindow : Window
 
         if (HasLectureCache(info.Id))
         {
-            downloadButton.IsEnabled = false;
             foreach (var button in onlineButtons)
             {
                 button.IsEnabled = false;
             }
         }
-        else
-        {
-            downloadButton.Click += async (_, _) =>
-                await DownloadLectureAsync(info, downloadButton, onlineButtons, downloadProgress);
-        }
+
+        UpdateOfflineButtons(info, offlinePdfButton, offlineVideoButton, offlineElearningButton);
+
+        offlinePdfButton.Click += (_, _) => OpenLecturePdf(info);
+        offlineVideoButton.Click += (_, _) => OpenLectureVideo(info);
+        offlineElearningButton.Click += (_, _) => OpenLectureElearning(info);
+
+        downloadButton.Click += async (_, _) =>
+            await DownloadLectureAsync(
+                info,
+                downloadButton,
+                onlineButtons,
+                offlinePdfButton,
+                offlineVideoButton,
+                offlineElearningButton,
+                downloadProgress);
 
         var grid = new Grid
         {
@@ -828,14 +950,46 @@ public partial class DashboardWindow : Window
             return false;
         }
 
-        var path = CachePaths.GetLecturePath(lectureId);
-        return File.Exists(path);
+        try
+        {
+            var directory = CachePaths.GetLectureDirectory();
+            if (!Directory.Exists(directory))
+            {
+                return false;
+            }
+
+            foreach (var file in Directory.EnumerateFiles(directory, $"{lectureId}*"))
+            {
+                var info = new FileInfo(file);
+                if (info.Exists && info.Length > 0)
+                {
+                    return true;
+                }
+            }
+
+            foreach (var folder in Directory.EnumerateDirectories(directory, $"{lectureId}*"))
+            {
+                if (DirectoryHasFiles(folder))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private async Task DownloadLectureAsync(
         LectureInfo info,
         Button downloadButton,
         IReadOnlyList<Button> onlineButtons,
+        Button offlinePdfButton,
+        Button offlineVideoButton,
+        Button offlineElearningButton,
         ProgressBar progressBar)
     {
         if (string.IsNullOrWhiteSpace(info.Id))
@@ -850,37 +1004,50 @@ public partial class DashboardWindow : Window
 
         try
         {
-            if (HasLectureCache(info.Id))
+            var token = SessionStore.AccessToken;
+            if (string.IsNullOrWhiteSpace(token))
             {
-                foreach (var button in onlineButtons)
-                {
-                    button.IsEnabled = false;
-                }
+                downloadButton.IsEnabled = true;
                 progressBar.IsVisible = false;
+                progressBar.IsIndeterminate = false;
                 return;
             }
 
-            var path = CachePaths.GetLecturePath(info.Id);
-            if (!string.IsNullOrWhiteSpace(info.Avatar))
+            var resourceResult = await _lectureService.GetFirstResourceUrlAsync(token, info.Id);
+            if (!resourceResult.IsSuccess || string.IsNullOrWhiteSpace(resourceResult.ResourceUrl))
             {
-                var uri = BuildImageUri(info.Avatar);
-                using var response = await ImageClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
-                response.EnsureSuccessStatusCode();
+                downloadButton.IsEnabled = true;
+                progressBar.IsVisible = false;
+                progressBar.IsIndeterminate = false;
+                return;
+            }
 
-                var total = response.Content.Headers.ContentLength;
-                if (total.HasValue && total.Value > 0)
-                {
-                    progressBar.Maximum = total.Value;
-                }
-                else
-                {
-                    progressBar.IsIndeterminate = true;
-                }
+            var uri = BuildResourceUri(resourceResult.ResourceUrl);
+            using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+            using var response = await ImageClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
 
-                await using var input = await response.Content.ReadAsStreamAsync();
-                await using var output = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None);
+            var extension = ResolveLectureFileExtension(uri, response);
+            DeleteLectureCacheFiles(info.Id);
+            var path = CachePaths.GetLecturePath(info.Id, extension);
+
+            var total = response.Content.Headers.ContentLength;
+            if (total.HasValue && total.Value > 0)
+            {
+                progressBar.Maximum = total.Value;
+            }
+            else
+            {
+                progressBar.IsIndeterminate = true;
+            }
+
+            var totalRead = 0L;
+            await using (var input = await response.Content.ReadAsStreamAsync())
+            await using (var output = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
                 var buffer = new byte[81920];
-                long totalRead = 0;
                 int read;
                 while ((read = await input.ReadAsync(buffer.AsMemory(0, buffer.Length))) > 0)
                 {
@@ -893,17 +1060,21 @@ public partial class DashboardWindow : Window
                         await Dispatcher.UIThread.InvokeAsync(() => progressBar.Value = value);
                     }
                 }
+            }
 
-                if (!total.HasValue || total.Value <= 0)
-                {
-                    progressBar.IsIndeterminate = false;
-                    progressBar.Value = progressBar.Maximum;
-                }
-            }
-            else
+            if (!total.HasValue || total.Value <= 0)
             {
-                await File.WriteAllTextAsync(path, string.Empty);
+                progressBar.IsIndeterminate = false;
+                progressBar.Value = progressBar.Maximum;
             }
+
+            if (IsZipPath(path))
+            {
+                ExtractLectureZipAndCleanup(info.Id, path);
+            }
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+                UpdateOfflineButtons(info, offlinePdfButton, offlineVideoButton, offlineElearningButton));
 
             foreach (var button in onlineButtons)
             {
@@ -911,6 +1082,7 @@ public partial class DashboardWindow : Window
             }
 
             progressBar.IsVisible = false;
+            downloadButton.IsEnabled = true;
         }
         catch
         {
@@ -918,6 +1090,324 @@ public partial class DashboardWindow : Window
             progressBar.IsVisible = false;
             progressBar.IsIndeterminate = false;
         }
+    }
+
+    private static Uri BuildResourceUri(string resourceUrl)
+    {
+        if (Uri.TryCreate(resourceUrl, UriKind.Absolute, out var absolute))
+        {
+            return absolute;
+        }
+
+        return new Uri(new Uri(ApiConfig.BaseUrl), resourceUrl.TrimStart('/'));
+    }
+
+    private static string? ResolveLectureFileExtension(Uri resourceUri, HttpResponseMessage response)
+    {
+        var contentDisposition = response.Content.Headers.ContentDisposition;
+        var fileName = contentDisposition?.FileNameStar ?? contentDisposition?.FileName;
+        if (!string.IsNullOrWhiteSpace(fileName))
+        {
+            var trimmed = fileName.Trim().Trim('"');
+            var ext = Path.GetExtension(trimmed);
+            if (!string.IsNullOrWhiteSpace(ext))
+            {
+                return ext;
+            }
+        }
+
+        var urlExtension = Path.GetExtension(resourceUri.LocalPath);
+        if (!string.IsNullOrWhiteSpace(urlExtension))
+        {
+            return urlExtension;
+        }
+
+        var mediaType = response.Content.Headers.ContentType?.MediaType;
+        return mediaType switch
+        {
+            "application/pdf" => ".pdf",
+            "application/zip" => ".zip",
+            "application/x-zip-compressed" => ".zip",
+            "application/vnd.ms-powerpoint" => ".ppt",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation" => ".pptx",
+            "video/mp4" => ".mp4",
+            _ => null,
+        };
+    }
+
+    private static void DeleteLectureCacheFiles(string lectureId)
+    {
+        try
+        {
+            var directory = CachePaths.GetLectureDirectory();
+            if (!Directory.Exists(directory))
+            {
+                return;
+            }
+
+            foreach (var file in Directory.EnumerateFiles(directory, $"{lectureId}*"))
+            {
+                File.Delete(file);
+            }
+
+            foreach (var folder in Directory.EnumerateDirectories(directory, $"{lectureId}*"))
+            {
+                Directory.Delete(folder, true);
+            }
+        }
+        catch
+        {
+            // Ignore cache cleanup failures.
+        }
+    }
+
+    private static bool DirectoryHasFiles(string folder)
+    {
+        try
+        {
+            return Directory.EnumerateFiles(folder, "*", SearchOption.AllDirectories).Any();
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsZipPath(string path)
+        => string.Equals(Path.GetExtension(path), ".zip", StringComparison.OrdinalIgnoreCase);
+
+    private static void ExtractLectureZipAndCleanup(string lectureId, string zipPath)
+    {
+        try
+        {
+            if (!File.Exists(zipPath))
+            {
+                return;
+            }
+
+            var lectureDirectory = Path.Combine(CachePaths.GetLectureDirectory(), lectureId);
+            if (Directory.Exists(lectureDirectory))
+            {
+                Directory.Delete(lectureDirectory, true);
+            }
+
+            Directory.CreateDirectory(lectureDirectory);
+            ZipFile.ExtractToDirectory(zipPath, lectureDirectory, true);
+            File.Delete(zipPath);
+        }
+        catch
+        {
+            // Ignore extraction errors to avoid breaking the UI flow.
+        }
+    }
+
+    private void OpenLecturePdf(LectureInfo info)
+    {
+        if (string.IsNullOrWhiteSpace(info.Id))
+        {
+            return;
+        }
+
+        var path = FindLectureFileByExtension(info.Id, ".pdf", searchRecursively: false);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        var viewer = new LecturePdfWindow();
+        viewer.OpenPdf(path, info.Title ?? "PDF");
+        viewer.Show(this);
+    }
+
+    private void OpenLectureVideo(LectureInfo info)
+    {
+        if (string.IsNullOrWhiteSpace(info.Id))
+        {
+            return;
+        }
+
+        var path = FindLectureFileByExtension(info.Id, ".mp4", searchRecursively: false);
+        OpenLocalFile(path);
+    }
+
+    private void OpenLectureElearning(LectureInfo info)
+    {
+        if (string.IsNullOrWhiteSpace(info.Id))
+        {
+            return;
+        }
+
+        var path = FindLectureStoryPath(info.Id);
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        var viewer = new LectureHtmlWindow();
+        viewer.OpenHtml(path, info.Title ?? "E-Learning");
+        viewer.Show(this);
+    }
+
+    private void UpdateOfflineButtons(
+        LectureInfo info,
+        Button pdfButton,
+        Button videoButton,
+        Button elearningButton)
+    {
+        if (string.IsNullOrWhiteSpace(info.Id))
+        {
+            pdfButton.IsEnabled = false;
+            videoButton.IsEnabled = false;
+            elearningButton.IsEnabled = false;
+            return;
+        }
+
+        var pdfPath = FindLectureFileByExtension(info.Id, ".pdf", searchRecursively: false);
+        var videoPath = FindLectureFileByExtension(info.Id, ".mp4", searchRecursively: false);
+        var htmlPath = FindLectureStoryPath(info.Id);
+
+        SetOfflineButtonState(pdfButton, !string.IsNullOrWhiteSpace(pdfPath), "Kh\u00F4ng t\u00ECm th\u1EA5y t\u00E0i li\u1EC7u PDF");
+        SetOfflineButtonState(videoButton, !string.IsNullOrWhiteSpace(videoPath), "Kh\u00F4ng t\u00ECm th\u1EA5y video mp4");
+        SetOfflineButtonState(elearningButton, !string.IsNullOrWhiteSpace(htmlPath), "Kh\u00F4ng t\u00ECm th\u1EA5y b\u00E0i gi\u1EA3ng HTML");
+    }
+
+    private static void SetOfflineButtonState(Button button, bool isAvailable, string missingMessage)
+    {
+        button.IsEnabled = isAvailable;
+        if (isAvailable)
+        {
+            ToolTip.SetTip(button, null);
+            ToolTip.SetShowOnDisabled(button, false);
+        }
+        else
+        {
+            ToolTip.SetTip(button, missingMessage);
+            ToolTip.SetShowOnDisabled(button, true);
+        }
+    }
+
+    private static void OpenLocalFile(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        {
+            return;
+        }
+
+        try
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                var info = new ProcessStartInfo("open");
+                info.ArgumentList.Add(path);
+                Process.Start(info);
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                var info = new ProcessStartInfo("xdg-open");
+                info.ArgumentList.Add(path);
+                Process.Start(info);
+            }
+        }
+        catch
+        {
+            // Ignore open failures.
+        }
+    }
+
+    private static string? FindLectureFileByExtension(string lectureId, string extension, bool searchRecursively)
+    {
+        var normalized = NormalizeExtension(extension);
+        var baseDirectory = CachePaths.GetLectureDirectory();
+        if (!Directory.Exists(baseDirectory))
+        {
+            return null;
+        }
+
+        var direct = Path.Combine(baseDirectory, lectureId + normalized);
+        if (IsExistingFile(direct))
+        {
+            return direct;
+        }
+
+        foreach (var file in Directory.EnumerateFiles(baseDirectory, $"{lectureId}*{normalized}"))
+        {
+            if (IsExistingFile(file))
+            {
+                return file;
+            }
+        }
+
+        var extractedDirectory = Path.Combine(baseDirectory, lectureId);
+        if (Directory.Exists(extractedDirectory))
+        {
+            var option = searchRecursively ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+            foreach (var file in Directory.EnumerateFiles(extractedDirectory, $"*{normalized}", option))
+            {
+                if (IsExistingFile(file))
+                {
+                    return file;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static string? FindLectureStoryPath(string lectureId)
+    {
+        var baseDirectory = CachePaths.GetLectureDirectory();
+        var extractedDirectory = Path.Combine(baseDirectory, lectureId);
+        if (Directory.Exists(extractedDirectory))
+        {
+            foreach (var file in Directory.EnumerateFiles(extractedDirectory, "*", SearchOption.TopDirectoryOnly))
+            {
+                if (string.Equals(Path.GetFileName(file), "story.html", StringComparison.OrdinalIgnoreCase)
+                    && IsExistingFile(file))
+                {
+                    return file;
+                }
+            }
+        }
+
+        foreach (var file in Directory.EnumerateFiles(baseDirectory, $"{lectureId}*.html"))
+        {
+            if (string.Equals(Path.GetFileName(file), "story.html", StringComparison.OrdinalIgnoreCase)
+                && IsExistingFile(file))
+            {
+                return file;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsExistingFile(string path)
+    {
+        try
+        {
+            var info = new FileInfo(path);
+            return info.Exists && info.Length > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string NormalizeExtension(string extension)
+    {
+        if (string.IsNullOrWhiteSpace(extension))
+        {
+            return string.Empty;
+        }
+
+        return extension.StartsWith(".", StringComparison.Ordinal)
+            ? extension
+            : "." + extension;
     }
 
     private void ShowLessonCourseView(string? className)

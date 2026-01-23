@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -66,6 +67,47 @@ public sealed class LectureService
         catch
         {
             return LectureListResult.Fail("Tai bai hoc that bai.");
+        }
+    }
+
+    public async Task<LectureResourceResult> GetFirstResourceUrlAsync(
+        string accessToken,
+        string lectureId,
+        CancellationToken cancellationToken = default)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"lecture/{Uri.EscapeDataString(lectureId)}");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        using var response = await Client.SendAsync(request, cancellationToken);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return LectureResourceResult.Fail($"Tai tai nguyen that bai ({(int)response.StatusCode}).");
+        }
+
+        try
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            };
+            var result = JsonSerializer.Deserialize<LectureDetailResponse>(body, options);
+            var url = result?.Data?.Resources?
+                .FirstOrDefault(resource => !string.IsNullOrWhiteSpace(resource.Url))
+                ?.Url;
+
+            if (result?.Success == true && !string.IsNullOrWhiteSpace(url))
+            {
+                return LectureResourceResult.Ok(url);
+            }
+
+            return LectureResourceResult.Fail(result?.Message ?? "Khong tim thay tai nguyen.");
+        }
+        catch
+        {
+            return LectureResourceResult.Fail("Khong the tai tai nguyen.");
         }
     }
 }

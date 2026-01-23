@@ -42,6 +42,39 @@ public sealed class LectureInfo
     public string? CourseId { get; set; }
 }
 
+public sealed class LectureDetailResponse
+{
+    [JsonPropertyName("success")]
+    public bool Success { get; set; }
+
+    [JsonPropertyName("message")]
+    public string? Message { get; set; }
+
+    [JsonPropertyName("data")]
+    public LectureDetail? Data { get; set; }
+}
+
+public sealed class LectureDetail
+{
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    [JsonPropertyName("resources")]
+    public List<LectureResource>? Resources { get; set; }
+}
+
+public sealed class LectureResource
+{
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
+
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
+
+    [JsonPropertyName("source")]
+    public string? Source { get; set; }
+}
+
 public sealed class LectureListResult
 {
     private LectureListResult(bool isSuccess, List<LectureInfo> lectures, string? error)
@@ -60,4 +93,24 @@ public sealed class LectureListResult
 
     public static LectureListResult Fail(string error)
         => new(false, new List<LectureInfo>(), error);
+}
+
+public sealed class LectureResourceResult
+{
+    private LectureResourceResult(bool isSuccess, string? resourceUrl, string? error)
+    {
+        IsSuccess = isSuccess;
+        ResourceUrl = resourceUrl;
+        ErrorMessage = error;
+    }
+
+    public bool IsSuccess { get; }
+    public string? ResourceUrl { get; }
+    public string? ErrorMessage { get; }
+
+    public static LectureResourceResult Ok(string resourceUrl)
+        => new(true, resourceUrl, null);
+
+    public static LectureResourceResult Fail(string error)
+        => new(false, null, error);
 }
