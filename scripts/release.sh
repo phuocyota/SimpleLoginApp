@@ -54,14 +54,20 @@ if [ ! -f "$CASK_FILE" ]; then
   exit 1
 fi
 
-python3 - <<PY
-from pathlib import Path
-path = Path("$CASK_FILE")
-text = path.read_text()
-text = text.replace("version \\""+ text.split('version \"')[1].split('\"',1)[0] +"\\"", f"version \\"{VERSION}\\"")
-text = text.replace("sha256 \\""+ text.split('sha256 \"')[1].split('\"',1)[0] +"\\"", f"sha256 \\"{SHA256}\\"")
-url_line = f"url \\"https://github.com/phuocyota/SimpleLoginApp/releases/download/v{VERSION}/{ZIP_NAME}\\""
+VERSION="$VERSION" SHA256="$SHA256" ZIP_NAME="$ZIP_NAME" CASK_FILE="$CASK_FILE" python3 - <<'PY'
+import os
 import re
+from pathlib import Path
+
+version = os.environ["VERSION"]
+sha256 = os.environ["SHA256"]
+zip_name = os.environ["ZIP_NAME"]
+
+path = Path(os.environ["CASK_FILE"])
+text = path.read_text()
+text = re.sub(r'^\\s*version \\".*\\"', f'version \"{version}\"', text, flags=re.M)
+text = re.sub(r'^\\s*sha256 \\".*\\"', f'sha256 \"{sha256}\"', text, flags=re.M)
+url_line = f'url \"https://github.com/phuocyota/SimpleLoginApp/releases/download/v{version}/{zip_name}\"'
 text = re.sub(r'^\\s*url \\".*\\"', url_line, text, flags=re.M)
 path.write_text(text)
 PY
