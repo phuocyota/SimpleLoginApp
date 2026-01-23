@@ -5,47 +5,50 @@ APP_NAME="Kido Teacher"
 BINARY_NAME="KidoTeacher"
 APP_SLUG="${APP_NAME// /-}"
 CONFIG="${CONFIG:-Release}"
-RID="${RID:-osx-arm64}"
 BUNDLE_ID="${BUNDLE_ID:-com.kido.teacher}"
 VERSION="${VERSION:-1.0.0}"
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PUBLISH_DIR="$ROOT_DIR/bin/$CONFIG/net8.0/$RID/publish"
-DIST_DIR="$ROOT_DIR/dist/macos"
-APP_DIR="$DIST_DIR/$APP_NAME.app"
-MACOS_DIR="$APP_DIR/Contents/MacOS"
-RES_DIR="$APP_DIR/Contents/Resources"
-
-dotnet publish "$ROOT_DIR/SimpleLoginApp.csproj" -c "$CONFIG" -r "$RID" --self-contained true /p:PublishSingleFile=false
-
-rm -rf "$APP_DIR"
-mkdir -p "$MACOS_DIR" "$RES_DIR"
-
-cp -R "$PUBLISH_DIR"/. "$MACOS_DIR/"
-
-if [ -f "$MACOS_DIR/$BINARY_NAME" ]; then
-  chmod +x "$MACOS_DIR/$BINARY_NAME"
+# Build both Apple Silicon + Intel by default
+RIDS_DEFAULT=("osx-arm64" "osx-x64")
+# If user sets RID env, only build that one
+if [[ "${RID:-}" != "" ]]; then
+  RIDS=("$RID")
 else
-  echo "Executable not found: $MACOS_DIR/$BINARY_NAME" >&2
-  exit 1
+  RIDS=("${RIDS_DEFAULT[@]}")
 fi
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT="$ROOT_DIR/SimpleLoginApp.csproj"
+
+DIST_ROOT="$ROOT_DIR/dist/macos"
 ICON_SRC="$ROOT_DIR/Assets/logo4.jpg"
-ICONSET_DIR="$ROOT_DIR/.tmp_icon.iconset"
-ICON_ICNS="$RES_DIR/$APP_NAME.icns"
 
-if command -v iconutil >/dev/null 2>&1 && command -v sips >/dev/null 2>&1 && [ -f "$ICON_SRC" ]; then
-  rm -rf "$ICONSET_DIR"
-  mkdir -p "$ICONSET_DIR"
-  for size in 16 32 64 128 256 512; do
-    sips -s format png -z "$size" "$size" "$ICON_SRC" --out "$ICONSET_DIR/icon_${size}x${size}.png" >/dev/null
-    sips -s format png -z "$((size * 2))" "$((size * 2))" "$ICON_SRC" --out "$ICONSET_DIR/icon_${size}x${size}@2x.png" >/dev/null
-  done
-  iconutil -c icns "$ICONSET_DIR" -o "$ICON_ICNS"
-  rm -rf "$ICONSET_DIR"
-fi
+make_icns () {
+  local app_dir="$1"
+  local res_dir="$app_dir/Contents/Resources"
+  local iconset_dir="$ROOT_DIR/.tmp_icon.iconset"
+  local icon_icns="$res_dir/$APP_NAME.icns"
 
-cat > "$APP_DIR/Contents/Info.plist" <<PLIST
+  mkdir -p "$res_dir"
+
+  if command -v iconutil >/dev/null 2>&1 \
+    && command -v sips >/dev/null 2>&1 \
+    && [[ -f "$ICON_SRC" ]]; then
+
+    rm -rf "$iconset_dir"
+    mkdir -p "$iconset_dir"
+    for size in 16 32 64 128 256 512; do
+      sips -s format png -z "$size" "$size" "$ICON_SRC" --out "$iconset_dir/icon_${size}x${size}.png" >/dev/null
+      sips -s format png -z "$((size * 2))" "$((size * 2))" "$ICON_SRC" --out "$iconset_dir/icon_${size}x${size}@2x.png" >/dev/null
+    done
+    iconutil -c icns "$iconset_dir" -o "$icon_icns"
+    rm -rf "$iconset_dir"
+  fi
+}
+
+write_plist () {
+  local app_dir="$1"
+  cat > "$app_dir/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -62,13 +65,69 @@ cat > "$APP_DIR/Contents/Info.plist" <<PLIST
 </dict>
 </plist>
 PLIST
+}
 
-mkdir -p "$DIST_DIR"
-(
-  cd "$DIST_DIR"
-  ZIP_NAME="${APP_SLUG}-macos.zip"
-  ditto -c -k --sequesterRsrc --keepParent "$APP_NAME.app" "$ZIP_NAME"
-)
+package_one () {
+  local rid="$1"
 
-echo "Created: $DIST_DIR/$APP_NAME.app"
-echo "Created: $DIST_DIR/${APP_SLUG}-macos.zip"
+  echo "==> Publishing for $rid ..."
+  dotnet publish "$PROJECT" -c "$CONFIG" -r "$rid" --self-contained true /p:PublishSingleFile=false
+
+  # Avalonia output folder pattern:
+  local publish_dir="$ROOT_DIR/bin/$CONFIG/net8.0/$rid/publish"
+
+  local arch_label
+  if [[ "$rid" == *"arm64"* ]]; then
+    arch_label="arm64"
+  else
+    arch_label="x64"
+  fi
+
+  # Create separate output per arch so they don't overwrite each other
+  local dist_dir="$DIST_ROOT/$arch_label"
+  local app_dir="$dist_dir/$APP_NAME.app"
+  local macos_dir="$app_dir/Contents/MacOS"
+  local res_dir="$app_dir/Contents/Resources"
+
+  rm -rf "$app_dir"
+  mkdir -p "$macos_dir" "$res_dir"
+
+  # Copy publish output into .app
+  cp -R "$publish_dir"/. "$macos_dir/"
+
+  if [[ -f "$macos_dir/$BINARY_NAME" ]]; then
+    chmod +x "$macos_dir/$BINARY_NAME"
+  else
+    echo "Executable not found: $macos_dir/$BINARY_NAME" >&2
+    echo "Check BINARY_NAME and publish output content." >&2
+    exit 1
+  fi
+
+  make_icns "$app_dir"
+  write_plist "$app_dir"
+
+  # Zip with ditto (best for mac apps)
+  mkdir -p "$dist_dir"
+  (
+    cd "$dist_dir"
+    local zip_name="${APP_SLUG}-macos-${arch_label}.zip"
+    ditto -c -k --sequesterRsrc --keepParent "$(basename "$app_dir")" "$zip_name"
+    echo "Created: $dist_dir/$zip_name"
+  )
+
+  echo "Created: $app_dir"
+  echo
+}
+
+main () {
+  rm -rf "$DIST_ROOT"
+  mkdir -p "$DIST_ROOT"
+
+  for rid in "${RIDS[@]}"; do
+    package_one "$rid"
+  done
+
+  echo "✅ Done. Output in: $DIST_ROOT"
+}
+
+main

@@ -15,3 +15,8 @@ obj/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Packaging artifacts
+dist/
+.tmp_iconset/
+.tmp_icon.iconset/

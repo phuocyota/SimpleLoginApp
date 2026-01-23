@@ -1344,8 +1344,10 @@ public partial class DashboardWindow : Window
         var extractedDirectory = Path.Combine(baseDirectory, lectureId);
         if (Directory.Exists(extractedDirectory))
         {
-            var option = searchRecursively ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-            foreach (var file in Directory.EnumerateFiles(extractedDirectory, $"*{normalized}", option))
+            var files = searchRecursively
+                ? Directory.EnumerateFiles(extractedDirectory, $"*{normalized}", SearchOption.AllDirectories)
+                : EnumerateFilesAtDepth(extractedDirectory, $"*{normalized}", maxDepth: 2);
+            foreach (var file in files)
             {
                 if (IsExistingFile(file))
                 {
@@ -1363,7 +1365,7 @@ public partial class DashboardWindow : Window
         var extractedDirectory = Path.Combine(baseDirectory, lectureId);
         if (Directory.Exists(extractedDirectory))
         {
-            foreach (var file in Directory.EnumerateFiles(extractedDirectory, "*", SearchOption.TopDirectoryOnly))
+            foreach (var file in EnumerateFilesAtDepth(extractedDirectory, "*", maxDepth: 2))
             {
                 if (string.Equals(Path.GetFileName(file), "story.html", StringComparison.OrdinalIgnoreCase)
                     && IsExistingFile(file))
@@ -1383,6 +1385,36 @@ public partial class DashboardWindow : Window
         }
 
         return null;
+    }
+
+    private static IEnumerable<string> EnumerateFilesAtDepth(string root, string pattern, int maxDepth)
+    {
+        if (maxDepth < 0)
+        {
+            yield break;
+        }
+
+        var queue = new Queue<(string Path, int Depth)>();
+        queue.Enqueue((root, 0));
+
+        while (queue.Count > 0)
+        {
+            var (current, depth) = queue.Dequeue();
+            foreach (var file in Directory.EnumerateFiles(current, pattern, SearchOption.TopDirectoryOnly))
+            {
+                yield return file;
+            }
+
+            if (depth >= maxDepth)
+            {
+                continue;
+            }
+
+            foreach (var dir in Directory.EnumerateDirectories(current, "*", SearchOption.TopDirectoryOnly))
+            {
+                queue.Enqueue((dir, depth + 1));
+            }
+        }
     }
 
     private static bool IsExistingFile(string path)
