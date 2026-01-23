@@ -15,7 +15,3 @@ obj/
 # OS files
 .DS_Store
 Thumbs.db
-
-dist/
-.tmp_iconset/
-.tmp_icon.iconset/
