@@ -755,6 +755,7 @@ public partial class DashboardWindow : Window
             BorderBrush = Brushes.LightGray,
             BorderThickness = new Thickness(1),
             Padding = new Thickness(6),
+            Margin = new Thickness(0, 0, 20, 12),
             Child = image,
         };
 
@@ -764,6 +765,7 @@ public partial class DashboardWindow : Window
             FontWeight = FontWeight.Bold,
             FontSize = 12,
             TextWrapping = TextWrapping.Wrap,
+            Width = 320,
         };
 
         var code = new TextBlock
@@ -804,6 +806,7 @@ public partial class DashboardWindow : Window
         {
             onlineGroup.Children.Add(button);
         }
+        onlineGroup.Margin = new Thickness(0, 6, 20, 12);
 
         var offlineGroup = new StackPanel
         {
@@ -824,6 +827,7 @@ public partial class DashboardWindow : Window
         offlineGroup.Children.Add(offlinePdfButton);
         offlineGroup.Children.Add(offlineVideoButton);
         offlineGroup.Children.Add(offlineElearningButton);
+        offlineGroup.Margin = new Thickness(0, 6, 20, 12);
 
         var statusGroup = new StackPanel
         {
@@ -855,6 +859,7 @@ public partial class DashboardWindow : Window
             IsVisible = false,
         };
         statusGroup.Children.Add(downloadProgress);
+        statusGroup.Margin = new Thickness(0, 6, 0, 12);
 
         if (HasLectureCache(info.Id))
         {
@@ -880,33 +885,30 @@ public partial class DashboardWindow : Window
                 offlineElearningButton,
                 downloadProgress);
 
-        var grid = new Grid
+        var infoHost = new Border
         {
-            ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto,Auto"),
-            RowDefinitions = new RowDefinitions("Auto"),
-            ColumnSpacing = 20,
+            Width = 340,
+            Padding = new Thickness(0, 4, 0, 0),
+            Margin = new Thickness(0, 0, 20, 12),
+            Child = infoPanel,
         };
+
+        var contentWrap = new WrapPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+        };
+
+        contentWrap.Children.Add(imageHost);
+        contentWrap.Children.Add(infoHost);
+        contentWrap.Children.Add(onlineGroup);
+        contentWrap.Children.Add(offlineGroup);
+        contentWrap.Children.Add(statusGroup);
 
         var gridHost = new Border
         {
             Padding = new Thickness(10),
-            Child = grid,
+            Child = contentWrap,
         };
-
-        grid.Children.Add(imageHost);
-        Grid.SetColumn(imageHost, 0);
-
-        grid.Children.Add(infoPanel);
-        Grid.SetColumn(infoPanel, 1);
-
-        grid.Children.Add(onlineGroup);
-        Grid.SetColumn(onlineGroup, 2);
-
-        grid.Children.Add(offlineGroup);
-        Grid.SetColumn(offlineGroup, 3);
-
-        grid.Children.Add(statusGroup);
-        Grid.SetColumn(statusGroup, 4);
 
         return new Border
         {
