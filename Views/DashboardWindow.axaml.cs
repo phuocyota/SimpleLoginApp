@@ -765,7 +765,7 @@ public partial class DashboardWindow : Window
             FontWeight = FontWeight.Bold,
             FontSize = 12,
             TextWrapping = TextWrapping.Wrap,
-            Width = 320,
+            MaxWidth = 520,
         };
 
         var code = new TextBlock
@@ -887,22 +887,40 @@ public partial class DashboardWindow : Window
 
         var infoHost = new Border
         {
-            Width = 340,
+            MinWidth = 260,
+            Width = 520,
             Padding = new Thickness(0, 4, 0, 0),
-            Margin = new Thickness(0, 0, 20, 12),
             Child = infoPanel,
         };
+
+        var topSection = new Grid
+        {
+            ColumnDefinitions = new ColumnDefinitions("Auto,*"),
+            RowDefinitions = new RowDefinitions("Auto"),
+            ColumnSpacing = 20,
+            Margin = new Thickness(0, 0, 20, 12),
+            MinWidth = 440,
+        };
+        topSection.Children.Add(imageHost);
+        Grid.SetColumn(imageHost, 0);
+        topSection.Children.Add(infoHost);
+        Grid.SetColumn(infoHost, 1);
+
+        var actionSection = new WrapPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            Margin = new Thickness(0, 0, 0, 12),
+        };
+        actionSection.Children.Add(onlineGroup);
+        actionSection.Children.Add(offlineGroup);
+        actionSection.Children.Add(statusGroup);
 
         var contentWrap = new WrapPanel
         {
             Orientation = Avalonia.Layout.Orientation.Horizontal,
         };
-
-        contentWrap.Children.Add(imageHost);
-        contentWrap.Children.Add(infoHost);
-        contentWrap.Children.Add(onlineGroup);
-        contentWrap.Children.Add(offlineGroup);
-        contentWrap.Children.Add(statusGroup);
+        contentWrap.Children.Add(topSection);
+        contentWrap.Children.Add(actionSection);
 
         var gridHost = new Border
         {
