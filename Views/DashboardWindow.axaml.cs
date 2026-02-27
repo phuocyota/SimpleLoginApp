@@ -755,17 +755,19 @@ public partial class DashboardWindow : Window
             BorderBrush = Brushes.LightGray,
             BorderThickness = new Thickness(1),
             Padding = new Thickness(6),
-            Margin = new Thickness(0, 0, 20, 12),
+            Margin = new Thickness(0, 0, 20, 0),
             Child = image,
         };
 
         var title = new TextBlock
         {
-            Text = info.Title ?? string.Empty,
+            Text = (info.Title ?? string.Empty).Trim(),
             FontWeight = FontWeight.Bold,
             FontSize = 12,
             TextWrapping = TextWrapping.Wrap,
             MaxWidth = 520,
+            TextAlignment = TextAlignment.Left,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
         };
 
         var code = new TextBlock
@@ -773,40 +775,20 @@ public partial class DashboardWindow : Window
             Text = info.Code != null ? $"M\u00E3 s\u1ED1: {info.Code}" : string.Empty,
             Foreground = Brushes.Blue,
             FontSize = 11,
+            TextAlignment = TextAlignment.Left,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
         };
 
         var infoPanel = new StackPanel
         {
             Spacing = 6,
             VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
         };
         infoPanel.Children.Add(title);
         infoPanel.Children.Add(code);
 
-        var onlineGroup = new StackPanel
-        {
-            Spacing = 6,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            Margin = new Thickness(0, 6, 0, 0),
-        };
-        onlineGroup.Children.Add(new TextBlock
-        {
-            Text = "Xem Online",
-            Foreground = Brushes.Green,
-            FontWeight = FontWeight.Bold,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-        });
-        var onlineButtons = new List<Button>
-        {
-            MakeLectureButton("Gi\u00E1o \u00E1n PDF", "lecture-action online"),
-            MakeLectureButton("Video d\u1EA1y m\u1EABu", "lecture-action online"),
-            MakeLectureButton("B\u00E0i gi\u1EA3ng E-Learning", "lecture-action online"),
-        };
-        foreach (var button in onlineButtons)
-        {
-            onlineGroup.Children.Add(button);
-        }
-        onlineGroup.Margin = new Thickness(0, 6, 20, 12);
+        var onlineButtons = new List<Button>();
 
         var offlineGroup = new StackPanel
         {
@@ -827,7 +809,7 @@ public partial class DashboardWindow : Window
         offlineGroup.Children.Add(offlinePdfButton);
         offlineGroup.Children.Add(offlineVideoButton);
         offlineGroup.Children.Add(offlineElearningButton);
-        offlineGroup.Margin = new Thickness(0, 6, 20, 12);
+        offlineGroup.Margin = new Thickness(0, 6, 20, 0);
 
         var statusGroup = new StackPanel
         {
@@ -859,7 +841,7 @@ public partial class DashboardWindow : Window
             IsVisible = false,
         };
         statusGroup.Children.Add(downloadProgress);
-        statusGroup.Margin = new Thickness(0, 6, 0, 12);
+        statusGroup.Margin = new Thickness(0, 6, 0, 0);
 
         if (HasLectureCache(info.Id))
         {
@@ -888,41 +870,30 @@ public partial class DashboardWindow : Window
         var infoHost = new Border
         {
             Padding = new Thickness(0, 4, 0, 0),
+            Margin = new Thickness(0, 0, 20, 0),
             Child = infoPanel,
         };
 
-        var topSection = new Grid
+        var rowGrid = new Grid
         {
-            ColumnDefinitions = new ColumnDefinitions("Auto,*"),
+            ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"),
             RowDefinitions = new RowDefinitions("Auto"),
             ColumnSpacing = 20,
-            Margin = new Thickness(0, 0, 20, 12),
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
         };
-        topSection.Children.Add(imageHost);
+        rowGrid.Children.Add(imageHost);
         Grid.SetColumn(imageHost, 0);
-        topSection.Children.Add(infoHost);
+        rowGrid.Children.Add(infoHost);
         Grid.SetColumn(infoHost, 1);
-
-        var actionSection = new WrapPanel
-        {
-            Orientation = Avalonia.Layout.Orientation.Horizontal,
-            Margin = new Thickness(0, 0, 0, 12),
-        };
-        actionSection.Children.Add(onlineGroup);
-        actionSection.Children.Add(offlineGroup);
-        actionSection.Children.Add(statusGroup);
-
-        var contentWrap = new WrapPanel
-        {
-            Orientation = Avalonia.Layout.Orientation.Horizontal,
-        };
-        contentWrap.Children.Add(topSection);
-        contentWrap.Children.Add(actionSection);
+        rowGrid.Children.Add(offlineGroup);
+        Grid.SetColumn(offlineGroup, 2);
+        rowGrid.Children.Add(statusGroup);
+        Grid.SetColumn(statusGroup, 3);
 
         var gridHost = new Border
         {
             Padding = new Thickness(10),
-            Child = contentWrap,
+            Child = rowGrid,
         };
 
         return new Border
