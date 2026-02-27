@@ -38,6 +38,7 @@ VERSION="$VERSION" ./scripts/package-macos.sh
 
 ZIP_ARM="dist/macos/arm64/${APP_SLUG}-macos-arm64.zip"
 ZIP_INTEL="dist/macos/x64/${APP_SLUG}-macos-x64.zip"
+LEGACY_ZIP_PATTERN="dist/macos/x64/${APP_SLUG}-macos-x64-min*.zip"
 
 [ -f "$ZIP_ARM" ] || die "Zip not found: $ZIP_ARM"
 [ -f "$ZIP_INTEL" ] || die "Zip not found: $ZIP_INTEL"
@@ -48,6 +49,18 @@ echo "Built: $ZIP_ARM"
 echo "SHA256 (arm64): $SHA_ARM"
 echo "Built: $ZIP_INTEL"
 echo "SHA256 (x64): $SHA_INTEL"
+
+LEGACY_ZIP=""
+for candidate in $LEGACY_ZIP_PATTERN; do
+  if [ -f "$candidate" ]; then
+    LEGACY_ZIP="$candidate"
+    break
+  fi
+done
+
+if [ -n "$LEGACY_ZIP" ]; then
+  echo "Built: $LEGACY_ZIP"
+fi
 
 # ---- Push source + tag ----
 git push origin HEAD
@@ -62,11 +75,21 @@ git push origin "v$VERSION"
 
 # ---- GitHub Release ----
 if gh release view "v$VERSION" -R "$REPO" >/dev/null 2>&1; then
-  gh release upload "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" -R "$REPO" --clobber
+  if [ -n "$LEGACY_ZIP" ]; then
+    gh release upload "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" "$LEGACY_ZIP" -R "$REPO" --clobber
+  else
+    gh release upload "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" -R "$REPO" --clobber
+  fi
 else
-  gh release create "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" -R "$REPO" \
-    -t "$APP_NAME $VERSION" \
-    -n "macOS build"
+  if [ -n "$LEGACY_ZIP" ]; then
+    gh release create "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" "$LEGACY_ZIP" -R "$REPO" \
+      -t "$APP_NAME $VERSION" \
+      -n "macOS build"
+  else
+    gh release create "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" -R "$REPO" \
+      -t "$APP_NAME $VERSION" \
+      -n "macOS build"
+  fi
 fi
 
 # ---- Update Homebrew Tap Cask ----

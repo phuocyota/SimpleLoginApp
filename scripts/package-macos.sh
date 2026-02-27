@@ -7,6 +7,10 @@ APP_SLUG="${APP_NAME// /-}"
 CONFIG="${CONFIG:-Release}"
 BUNDLE_ID="${BUNDLE_ID:-com.kido.teacher}"
 VERSION="${VERSION:-1.0.0}"
+TFM="${TFM:-net8.0}"
+MIN_OS_VERSION="${MIN_OS_VERSION:-11.0}"
+# Optional: create an extra Intel package for older macOS (example: 10.15)
+LEGACY_INTEL_MIN_OS_VERSION="${LEGACY_INTEL_MIN_OS_VERSION:-}"
 
 # Build both Apple Silicon + Intel by default
 RIDS_DEFAULT=("osx-arm64" "osx-x64")
@@ -48,6 +52,7 @@ make_icns () {
 
 write_plist () {
   local app_dir="$1"
+  local min_os_version="$2"
   cat > "$app_dir/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -60,7 +65,7 @@ write_plist () {
   <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundleExecutable</key><string>$BINARY_NAME</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>LSMinimumSystemVersion</key><string>11.0</string>
+  <key>LSMinimumSystemVersion</key><string>$min_os_version</string>
   <key>CFBundleIconFile</key><string>$APP_NAME</string>
 </dict>
 </plist>
@@ -71,10 +76,10 @@ package_one () {
   local rid="$1"
 
   echo "==> Publishing for $rid ..."
-  dotnet publish "$PROJECT" -c "$CONFIG" -r "$rid" --self-contained true /p:PublishSingleFile=false
+  dotnet publish "$PROJECT" -c "$CONFIG" -f "$TFM" -r "$rid" --self-contained true /p:PublishSingleFile=false
 
   # Avalonia output folder pattern:
-  local publish_dir="$ROOT_DIR/bin/$CONFIG/net8.0/$rid/publish"
+  local publish_dir="$ROOT_DIR/bin/$CONFIG/$TFM/$rid/publish"
 
   local arch_label
   if [[ "$rid" == *"arm64"* ]]; then
@@ -104,7 +109,7 @@ package_one () {
   fi
 
   make_icns "$app_dir"
-  write_plist "$app_dir"
+  write_plist "$app_dir" "$MIN_OS_VERSION"
 
   # Zip with ditto (best for mac apps)
   mkdir -p "$dist_dir"
@@ -114,6 +119,18 @@ package_one () {
     ditto -c -k --sequesterRsrc --keepParent "$(basename "$app_dir")" "$zip_name"
     echo "Created: $dist_dir/$zip_name"
   )
+
+  if [[ "$rid" == "osx-x64" && -n "$LEGACY_INTEL_MIN_OS_VERSION" && "$LEGACY_INTEL_MIN_OS_VERSION" != "$MIN_OS_VERSION" ]]; then
+    write_plist "$app_dir" "$LEGACY_INTEL_MIN_OS_VERSION"
+    (
+      cd "$dist_dir"
+      local legacy_zip_name="${APP_SLUG}-macos-${arch_label}-min${LEGACY_INTEL_MIN_OS_VERSION}.zip"
+      ditto -c -k --sequesterRsrc --keepParent "$(basename "$app_dir")" "$legacy_zip_name"
+      echo "Created: $dist_dir/$legacy_zip_name"
+    )
+    # Restore default plist for the non-legacy package in dist folder.
+    write_plist "$app_dir" "$MIN_OS_VERSION"
+  fi
 
   echo "Created: $app_dir"
   echo
