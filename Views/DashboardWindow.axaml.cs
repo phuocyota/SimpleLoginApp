@@ -887,8 +887,6 @@ public partial class DashboardWindow : Window
 
         var infoHost = new Border
         {
-            MinWidth = 260,
-            Width = 520,
             Padding = new Thickness(0, 4, 0, 0),
             Child = infoPanel,
         };
@@ -899,7 +897,6 @@ public partial class DashboardWindow : Window
             RowDefinitions = new RowDefinitions("Auto"),
             ColumnSpacing = 20,
             Margin = new Thickness(0, 0, 20, 12),
-            MinWidth = 440,
         };
         topSection.Children.Add(imageHost);
         Grid.SetColumn(imageHost, 0);
