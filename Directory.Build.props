@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net8.0</TargetFramework>
+    <AvaloniaBuildTasksLocation Condition="'$(AvaloniaBuildTasksLocation)' == '' and '$(NuGetPackageRoot)' != ''">$(NuGetPackageRoot)avalonia/11.3.11/tools/netstandard2.0/Avalonia.Build.Tasks.dll</AvaloniaBuildTasksLocation>
+  </PropertyGroup>
+</Project>
