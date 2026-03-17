@@ -300,14 +300,6 @@
                 <StackPanel HorizontalAlignment="Right"
                             Margin="0,30,20,0"
                             Spacing="8">
-                  <Button Classes="link">
-                    <TextBlock Text="Chinh Sua Hinh Anh Gioi Thieu"
-                               TextDecorations="Underline"/>
-                  </Button>
-                  <Button Classes="link">
-                    <TextBlock Text="Chinh Sua Thong Tin Cong Ty"
-                               TextDecorations="Underline"/>
-                  </Button>
                 </StackPanel>
               </Grid>
             </Grid>

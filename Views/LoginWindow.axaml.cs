@@ -12,6 +12,7 @@ public partial class LoginWindow : Window
     private bool _showPassword;
     private bool _isLoggingIn;
     private readonly LoginService _loginService = new();
+    private readonly RememberedSessionService _rememberedSessionService = new();
 
     public LoginWindow()
     {
@@ -56,10 +57,25 @@ public partial class LoginWindow : Window
 
             if (result.IsSuccess)
             {
-                SessionStore.UserId = result.UserId;
-                SessionStore.AccessToken = result.AccessToken;
-                SessionStore.UserType = result.UserType;
-                SessionStore.DeviceId = result.DeviceId ?? deviceId;
+                SessionStore.Set(
+                    result.UserId,
+                    result.AccessToken,
+                    result.UserType,
+                    result.DeviceId ?? deviceId);
+
+                if (RememberCheck.IsChecked == true)
+                {
+                    _rememberedSessionService.SaveCurrentSession();
+                }
+                else
+                {
+                    _rememberedSessionService.ClearSavedSession();
+                    SessionStore.Set(
+                        result.UserId,
+                        result.AccessToken,
+                        result.UserType,
+                        result.DeviceId ?? deviceId);
+                }
 
                 var dashboard = new DashboardWindow();
                 if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

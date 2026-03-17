@@ -13,6 +13,9 @@ public static class CachePaths
     private static readonly string ClassPath = Path.Combine(BasePath, "class");
     private static readonly string CoursePath = Path.Combine(BasePath, "course");
     private static readonly string LecturePath = Path.Combine(BasePath, "lecture");
+    private static readonly string AppDataPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "SimpleLoginApp");
 
     public static string GetClassImagePath(string classId)
     {
@@ -42,6 +45,12 @@ public static class CachePaths
     {
         Directory.CreateDirectory(LecturePath);
         return Path.Combine(LecturePath, lectureId + NormalizeExtension(extension));
+    }
+
+    public static string GetTokenFilePath()
+    {
+        Directory.CreateDirectory(AppDataPath);
+        return Path.Combine(AppDataPath, "token.txt");
     }
 
     private static string NormalizeExtension(string? extension)

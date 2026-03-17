@@ -5,6 +5,7 @@ using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using Avalonia.Markup.Xaml;
 using AvaloniaWebView;
+using SimpleLoginApp.Services;
 using SimpleLoginApp.ViewModels;
 using SimpleLoginApp.Views;
 
@@ -12,6 +13,8 @@ namespace SimpleLoginApp;
 
 public partial class App : Application
 {
+    private readonly RememberedSessionService _rememberedSessionService = new();
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -30,10 +33,7 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = new LoginWindow
-            {
-                DataContext = new MainWindowViewModel(),
-            };
+            desktop.MainWindow = CreateStartupWindow();
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -50,5 +50,18 @@ public partial class App : Application
         {
             BindingPlugins.DataValidators.Remove(plugin);
         }
+    }
+
+    private Avalonia.Controls.Window CreateStartupWindow()
+    {
+        if (_rememberedSessionService.TryRestoreValidSession())
+        {
+            return new DashboardWindow();
+        }
+
+        return new LoginWindow
+        {
+            DataContext = new MainWindowViewModel(),
+        };
     }
 }
