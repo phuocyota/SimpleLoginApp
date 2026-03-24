@@ -856,6 +856,30 @@ public partial class DashboardWindow : Window
         offlinePdfButton.Click += (_, _) => OpenLecturePdf(info);
         offlineVideoButton.Click += (_, _) => OpenLectureVideo(info);
         offlineElearningButton.Click += (_, _) => OpenLectureElearning(info);
+        deleteButton.Click += (_, _) =>
+        {
+            if (string.IsNullOrWhiteSpace(info.Id))
+            {
+                return;
+            }
+
+            deleteButton.IsEnabled = false;
+
+            try
+            {
+                DeleteLectureCacheFiles(info.Id);
+                UpdateOfflineButtons(info, offlinePdfButton, offlineVideoButton, offlineElearningButton);
+
+                foreach (var button in onlineButtons)
+                {
+                    button.IsEnabled = true;
+                }
+            }
+            finally
+            {
+                deleteButton.IsEnabled = true;
+            }
+        };
 
         downloadButton.Click += async (_, _) =>
             await DownloadLectureAsync(
