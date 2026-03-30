@@ -7,6 +7,11 @@ APP_SLUG="${APP_NAME// /-}"
 CONFIG="${CONFIG:-Release}"
 BUNDLE_ID="${BUNDLE_ID:-com.kido.teacher}"
 VERSION="${VERSION:-1.0.0}"
+SPARKLE_FEED_URL="${SPARKLE_FEED_URL:-}"
+SPARKLE_PUBLIC_ED_KEY="${SPARKLE_PUBLIC_ED_KEY:-}"
+SPARKLE_AUTO_CHECKS="${SPARKLE_AUTO_CHECKS:-true}"
+SPARKLE_AUTO_DOWNLOADS="${SPARKLE_AUTO_DOWNLOADS:-false}"
+SPARKLE_DIR="${SPARKLE_DIR:-}"
 
 # Build both Apple Silicon + Intel by default
 RIDS_DEFAULT=("osx-arm64" "osx-x64")
@@ -62,9 +67,37 @@ write_plist () {
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>LSMinimumSystemVersion</key><string>11.0</string>
   <key>CFBundleIconFile</key><string>$APP_NAME</string>
+$(if [[ -n "$SPARKLE_FEED_URL" ]]; then printf '  <key>SUFeedURL</key><string>%s</string>\n' "$SPARKLE_FEED_URL"; fi)
+$(if [[ -n "$SPARKLE_PUBLIC_ED_KEY" ]]; then printf '  <key>SUPublicEDKey</key><string>%s</string>\n' "$SPARKLE_PUBLIC_ED_KEY"; fi)
+$(if [[ -n "$SPARKLE_FEED_URL" ]]; then printf '  <key>SUEnableAutomaticChecks</key><%s/>\n' "$([[ "$SPARKLE_AUTO_CHECKS" == "true" ]] && echo true || echo false)"; fi)
+$(if [[ -n "$SPARKLE_FEED_URL" ]]; then printf '  <key>SUAutomaticallyUpdate</key><%s/>\n' "$([[ "$SPARKLE_AUTO_DOWNLOADS" == "true" ]] && echo true || echo false)"; fi)
 </dict>
 </plist>
 PLIST
+}
+
+embed_sparkle () {
+  local app_dir="$1"
+  local frameworks_dir="$app_dir/Contents/Frameworks"
+  local sparkle_framework="$SPARKLE_DIR/Sparkle.framework"
+  local autoupdate_app="$SPARKLE_DIR/Autoupdate.app"
+
+  if [[ -z "$SPARKLE_DIR" ]]; then
+    return
+  fi
+
+  if [[ ! -d "$sparkle_framework" ]]; then
+    echo "SPARKLE_DIR is set but Sparkle.framework was not found: $sparkle_framework" >&2
+    exit 1
+  fi
+
+  mkdir -p "$frameworks_dir"
+  rm -rf "$frameworks_dir/Sparkle.framework" "$frameworks_dir/Autoupdate.app"
+  cp -R "$sparkle_framework" "$frameworks_dir/"
+
+  if [[ -d "$autoupdate_app" ]]; then
+    cp -R "$autoupdate_app" "$frameworks_dir/"
+  fi
 }
 
 package_one () {
@@ -105,6 +138,7 @@ package_one () {
 
   make_icns "$app_dir"
   write_plist "$app_dir"
+  embed_sparkle "$app_dir"
 
   # Zip with ditto (best for mac apps)
   mkdir -p "$dist_dir"

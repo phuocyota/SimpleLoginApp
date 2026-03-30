@@ -12,6 +12,7 @@ APP_SLUG="${APP_NAME// /-}"
 REPO="phuocyota/SimpleLoginApp"
 TAP="phuocyota/teacher"
 CASK_NAME="kido-teacher"
+SPARKLE_GENERATE_APPCAST="${SPARKLE_GENERATE_APPCAST:-}"
 
 # ---- Helpers ----
 die() { echo "$*" >&2; exit 1; }
@@ -49,6 +50,29 @@ echo "SHA256 (arm64): $SHA_ARM"
 echo "Built: $ZIP_INTEL"
 echo "SHA256 (x64): $SHA_INTEL"
 
+APPCAST_DIR="dist/macos/appcast"
+APPCAST_FILE="$APPCAST_DIR/appcast.xml"
+mkdir -p "$APPCAST_DIR"
+
+if [ -n "$SPARKLE_GENERATE_APPCAST" ]; then
+  if [ ! -x "$SPARKLE_GENERATE_APPCAST" ]; then
+    die "SPARKLE_GENERATE_APPCAST is not executable: $SPARKLE_GENERATE_APPCAST"
+  fi
+
+  if [ -z "${SPARKLE_ED_KEY_FILE:-}" ]; then
+    die "SPARKLE_ED_KEY_FILE is required when SPARKLE_GENERATE_APPCAST is set."
+  fi
+
+  "$SPARKLE_GENERATE_APPCAST" \
+    --ed-key-file "$SPARKLE_ED_KEY_FILE" \
+    --download-url-prefix "https://github.com/$REPO/releases/download/v$VERSION/" \
+    --link "https://github.com/$REPO/releases/tag/v$VERSION" \
+    --channel stable \
+    -o "$APPCAST_FILE" \
+    "$ZIP_ARM" "$ZIP_INTEL"
+  echo "Generated Sparkle appcast: $APPCAST_FILE"
+fi
+
 # ---- Push source + tag ----
 git push origin HEAD
 
@@ -62,11 +86,21 @@ git push origin "v$VERSION"
 
 # ---- GitHub Release ----
 if gh release view "v$VERSION" -R "$REPO" >/dev/null 2>&1; then
-  gh release upload "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" -R "$REPO" --clobber
+  if [ -f "$APPCAST_FILE" ]; then
+    gh release upload "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" "$APPCAST_FILE" -R "$REPO" --clobber
+  else
+    gh release upload "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" -R "$REPO" --clobber
+  fi
 else
-  gh release create "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" -R "$REPO" \
-    -t "$APP_NAME $VERSION" \
-    -n "macOS build"
+  if [ -f "$APPCAST_FILE" ]; then
+    gh release create "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" "$APPCAST_FILE" -R "$REPO" \
+      -t "$APP_NAME $VERSION" \
+      -n "macOS build"
+  else
+    gh release create "v$VERSION" "$ZIP_ARM" "$ZIP_INTEL" -R "$REPO" \
+      -t "$APP_NAME $VERSION" \
+      -n "macOS build"
+  fi
 fi
 
 # ---- Update Homebrew Tap Cask ----
