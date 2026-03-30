@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Avalonia.Controls;
+using SimpleLoginApp.Services;
 
 namespace SimpleLoginApp.Views;
 
@@ -20,6 +21,6 @@ public partial class LectureHtmlWindow : Window
 
         Title = string.IsNullOrWhiteSpace(title) ? "E-Learning" : title;
         var fullPath = Path.GetFullPath(path);
-        WebView.Url = new Uri(fullPath);
+        WebView.Url = LocalContentServer.Instance.RegisterFile(fullPath);
     }
 }

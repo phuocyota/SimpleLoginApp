@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -1204,13 +1205,111 @@ public partial class DashboardWindow : Window
             }
 
             Directory.CreateDirectory(lectureDirectory);
-            ZipFile.ExtractToDirectory(zipPath, lectureDirectory, true);
+            ExtractZipToDirectoryWithBestEffort(zipPath, lectureDirectory);
             File.Delete(zipPath);
         }
         catch
         {
             // Ignore extraction errors to avoid breaking the UI flow.
         }
+    }
+
+    private static void ExtractZipToDirectoryWithBestEffort(string zipPath, string destinationDirectory)
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+        var encodings = new Encoding?[]
+        {
+            Encoding.UTF8,
+            Encoding.GetEncoding(1258),
+            null,
+            Encoding.GetEncoding(437),
+        };
+
+        List<string>? lastNames = null;
+        Encoding? selectedEncoding = null;
+        var bestScore = int.MaxValue;
+
+        foreach (var encoding in encodings)
+        {
+            using var stream = File.OpenRead(zipPath);
+            using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false, entryNameEncoding: encoding);
+            var names = archive.Entries.Select(entry => entry.FullName).ToList();
+            var score = ScoreZipEntryNames(names);
+
+            if (score < bestScore)
+            {
+                bestScore = score;
+                selectedEncoding = encoding;
+                lastNames = names;
+            }
+        }
+
+        using var extractStream = File.OpenRead(zipPath);
+        using var extractArchive = new ZipArchive(extractStream, ZipArchiveMode.Read, leaveOpen: false, entryNameEncoding: selectedEncoding);
+        foreach (var entry in extractArchive.Entries)
+        {
+            ExtractZipEntry(entry, destinationDirectory);
+        }
+    }
+
+    private static int ScoreZipEntryNames(IEnumerable<string> entryNames)
+    {
+        var score = 0;
+
+        foreach (var entryName in entryNames)
+        {
+            if (string.IsNullOrWhiteSpace(entryName))
+            {
+                score += 100;
+                continue;
+            }
+
+            score += entryName.Count(ch => ch == '\uFFFD') * 100;
+            score += entryName.Count(ch => ch == '?') * 25;
+
+            if (entryName.Contains("Ã", StringComparison.Ordinal)
+                || entryName.Contains("â", StringComparison.Ordinal)
+                || entryName.Contains("ð", StringComparison.Ordinal))
+            {
+                score += 50;
+            }
+        }
+
+        return score;
+    }
+
+    private static void ExtractZipEntry(ZipArchiveEntry entry, string destinationDirectory)
+    {
+        var normalizedName = entry.FullName.Replace('\\', Path.DirectorySeparatorChar)
+            .Replace('/', Path.DirectorySeparatorChar);
+        var destinationPath = Path.GetFullPath(Path.Combine(destinationDirectory, normalizedName));
+        var destinationRoot = Path.GetFullPath(destinationDirectory) + Path.DirectorySeparatorChar;
+
+        if (!destinationPath.StartsWith(destinationRoot, StringComparison.Ordinal))
+        {
+            throw new IOException("Zip entry points outside destination directory.");
+        }
+
+        var isDirectory = string.IsNullOrEmpty(entry.Name)
+            || entry.FullName.EndsWith("/", StringComparison.Ordinal)
+            || entry.FullName.EndsWith("\\", StringComparison.Ordinal);
+
+        if (isDirectory)
+        {
+            Directory.CreateDirectory(destinationPath);
+            return;
+        }
+
+        var parent = Path.GetDirectoryName(destinationPath);
+        if (!string.IsNullOrWhiteSpace(parent))
+        {
+            Directory.CreateDirectory(parent);
+        }
+
+        using var input = entry.Open();
+        using var output = new FileStream(destinationPath, FileMode.Create, FileAccess.Write, FileShare.None);
+        input.CopyTo(output);
     }
 
     private void OpenLecturePdf(LectureInfo info)
