@@ -425,21 +425,10 @@ public partial class DashboardWindow : Window
         try
         {
             var uri = BuildImageUri(currentImage);
-            using var response = await ImageClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead);
+            using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            using var response = await ImageClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
-            var bytes = await response.Content.ReadAsByteArrayAsync();
-
-            if (!string.IsNullOrWhiteSpace(cachePath))
-            {
-                var extension = ResolveImageFileExtension(uri, response);
-                var targetPath = string.IsNullOrWhiteSpace(extension)
-                    ? cachePath
-                    : Path.ChangeExtension(cachePath, extension);
-                DeleteCacheFilesForBasePath(cachePath);
-                await File.WriteAllBytesAsync(targetPath, bytes);
-            }
-
-            using var stream = new MemoryStream(bytes);
+            await using var stream = await response.Content.ReadAsStreamAsync();
             return new Bitmap(stream);
         }
         catch
