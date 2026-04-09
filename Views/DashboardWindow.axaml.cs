@@ -1222,13 +1222,14 @@ public partial class DashboardWindow : Window
         {
             Encoding.UTF8,
             Encoding.GetEncoding(1258),
+            Encoding.GetEncoding(1252),
             null,
             Encoding.GetEncoding(437),
         };
 
-        List<string>? lastNames = null;
         Encoding? selectedEncoding = null;
         var bestScore = int.MaxValue;
+        var bestVietnameseCount = -1;
 
         foreach (var encoding in encodings)
         {
@@ -1236,12 +1237,13 @@ public partial class DashboardWindow : Window
             using var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: false, entryNameEncoding: encoding);
             var names = archive.Entries.Select(entry => entry.FullName).ToList();
             var score = ScoreZipEntryNames(names);
+            var vietnameseCount = CountVietnameseCharacters(names);
 
-            if (score < bestScore)
+            if (score < bestScore || (score == bestScore && vietnameseCount > bestVietnameseCount))
             {
                 bestScore = score;
+                bestVietnameseCount = vietnameseCount;
                 selectedEncoding = encoding;
-                lastNames = names;
             }
         }
 
@@ -1270,13 +1272,29 @@ public partial class DashboardWindow : Window
 
             if (entryName.Contains("Ã", StringComparison.Ordinal)
                 || entryName.Contains("â", StringComparison.Ordinal)
-                || entryName.Contains("ð", StringComparison.Ordinal))
+                || entryName.Contains("ð", StringComparison.Ordinal)
+                || entryName.Contains("Æ", StringComparison.Ordinal)
+                || entryName.Contains("¢", StringComparison.Ordinal)
+                || entryName.Contains("¤", StringComparison.Ordinal))
             {
                 score += 50;
             }
         }
 
         return score;
+    }
+
+    private static int CountVietnameseCharacters(IEnumerable<string> entryNames)
+    {
+        const string vietnameseChars = "ăâđêôơưáàảãạắằẳẵặấầẩẫậéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵĂÂĐÊÔƠƯÁÀẢÃẠẮẰẲẴẶẤẦẨẪẬÉÈẺẼẸẾỀỂỄỆÍÌỈĨỊÓÒỎÕỌỐỒỔỖỘỚỜỞỠỢÚÙỦŨỤỨỪỬỮỰÝỲỶỸỴ";
+
+        var count = 0;
+        foreach (var entryName in entryNames)
+        {
+            count += entryName.Count(ch => vietnameseChars.Contains(ch));
+        }
+
+        return count;
     }
 
     private static void ExtractZipEntry(ZipArchiveEntry entry, string destinationDirectory)
