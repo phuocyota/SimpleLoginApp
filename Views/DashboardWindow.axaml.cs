@@ -362,7 +362,6 @@ public partial class DashboardWindow : Window
         var cachePath = !string.IsNullOrWhiteSpace(classId)
             ? CachePaths.GetClassImagePath(classId)
             : null;
-
         var cached = TryLoadCachedBitmap(cachePath);
         if (cached != null)
         {
@@ -415,7 +414,9 @@ public partial class DashboardWindow : Window
         }
     }
 
-    private static async Task<Bitmap?> TryLoadRemoteImageAsync(string? currentImage, string? cachePath)
+    private static async Task<Bitmap?> TryLoadRemoteImageAsync(
+        string? currentImage,
+        string? cachePath)
     {
         if (string.IsNullOrWhiteSpace(currentImage))
         {
@@ -428,7 +429,31 @@ public partial class DashboardWindow : Window
             using var request = new HttpRequestMessage(HttpMethod.Get, uri);
             using var response = await ImageClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             response.EnsureSuccessStatusCode();
-            await using var stream = await response.Content.ReadAsStreamAsync();
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            if (bytes.Length == 0)
+            {
+                return null;
+            }
+
+            if (!string.IsNullOrWhiteSpace(cachePath))
+            {
+                try
+                {
+                    var extension = ResolveImageFileExtension(uri, response);
+                    DeleteCacheFilesForBasePath(cachePath);
+                    var targetPath = string.IsNullOrWhiteSpace(extension)
+                        ? cachePath
+                        : cachePath + extension;
+                    Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+                    await File.WriteAllBytesAsync(targetPath, bytes);
+                }
+                catch
+                {
+                    // Ignore image cache write failures.
+                }
+            }
+
+            await using var stream = new MemoryStream(bytes);
             return new Bitmap(stream);
         }
         catch
@@ -651,7 +676,9 @@ public partial class DashboardWindow : Window
             return;
         }
 
-        var bitmap = await TryLoadRemoteImageAsync(info.Image ?? info.CurrentImage, cachePath);
+        var bitmap = await TryLoadRemoteImageAsync(
+            info.Image ?? info.CurrentImage,
+            cachePath);
         if (bitmap == null)
         {
             return;
