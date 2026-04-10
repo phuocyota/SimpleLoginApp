@@ -408,8 +408,9 @@ public partial class DashboardWindow : Window
             using var stream = File.OpenRead(resolvedPath);
             return new Bitmap(stream);
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine($"[ImageCache] Failed to load cached bitmap '{cachePath}': {ex}");
             return null;
         }
     }
@@ -427,11 +428,20 @@ public partial class DashboardWindow : Window
         {
             var uri = BuildImageUri(currentImage);
             using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            var token = SessionStore.AccessToken;
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+            Debug.WriteLine($"[ImageFetch] Requesting image: {uri}");
             using var response = await ImageClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            Debug.WriteLine($"[ImageFetch] Response {(int)response.StatusCode} for: {uri}");
             response.EnsureSuccessStatusCode();
             var bytes = await response.Content.ReadAsByteArrayAsync();
             if (bytes.Length == 0)
             {
+                Debug.WriteLine($"[ImageFetch] Empty image payload: {uri}");
                 return null;
             }
 
@@ -446,18 +456,20 @@ public partial class DashboardWindow : Window
                         : cachePath + extension;
                     Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
                     await File.WriteAllBytesAsync(targetPath, bytes);
+                    Debug.WriteLine($"[ImageCache] Saved image cache: {targetPath}");
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Ignore image cache write failures.
+                    Debug.WriteLine($"[ImageCache] Failed to save image cache '{cachePath}': {ex}");
                 }
             }
 
             await using var stream = new MemoryStream(bytes);
             return new Bitmap(stream);
         }
-        catch
+        catch (Exception ex)
         {
+            Debug.WriteLine($"[ImageFetch] Failed to fetch image '{currentImage}': {ex}");
             return null;
         }
     }
@@ -937,7 +949,20 @@ public partial class DashboardWindow : Window
 
     private async Task LoadLectureImageAsync(Image image, LectureInfo info)
     {
-        var bitmap = await TryLoadRemoteImageAsync(info.Avatar, null);
+        var lectureId = info.Id;
+        var cachePath = !string.IsNullOrWhiteSpace(lectureId)
+            ? CachePaths.GetLecturePath(lectureId)
+            : null;
+
+        var cached = TryLoadCachedBitmap(cachePath);
+        if (cached != null)
+        {
+            _lectureImages.Add(cached);
+            await Dispatcher.UIThread.InvokeAsync(() => image.Source = cached);
+            return;
+        }
+
+        var bitmap = await TryLoadRemoteImageAsync(info.Avatar, cachePath);
         if (bitmap == null)
         {
             return;
