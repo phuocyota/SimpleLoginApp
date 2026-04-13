@@ -370,7 +370,7 @@ public partial class DashboardWindow : Window
             return;
         }
 
-        var bitmap = await TryLoadRemoteImageAsync(info.CurrentImage, cachePath);
+        var bitmap = await TryLoadRemoteImageAsync(GetClassImageSource(info), cachePath);
         if (bitmap == null)
         {
             return;
@@ -411,9 +411,33 @@ public partial class DashboardWindow : Window
         catch (Exception ex)
         {
             Debug.WriteLine($"[ImageCache] Failed to load cached bitmap '{cachePath}': {ex}");
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(cachePath))
+                {
+                    var resolvedPath = ResolveCachedFilePath(cachePath);
+                    if (!string.IsNullOrWhiteSpace(resolvedPath) && File.Exists(resolvedPath))
+                    {
+                        File.Delete(resolvedPath);
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore cache cleanup failures.
+            }
             return null;
         }
     }
+
+    private static string? GetClassImageSource(ClassInfo info)
+        => info.CurrentImage;
+
+    private static string? GetCourseImageSource(CourseInfo info)
+        => info.Image ?? info.CurrentImage;
+
+    private static string? GetLectureImageSource(LectureInfo info)
+        => info.Avatar;
 
     private static async Task<Bitmap?> TryLoadRemoteImageAsync(
         string? currentImage,
@@ -445,6 +469,18 @@ public partial class DashboardWindow : Window
                 return null;
             }
 
+            Bitmap? bitmap;
+            try
+            {
+                await using var validationStream = new MemoryStream(bytes);
+                bitmap = new Bitmap(validationStream);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[ImageFetch] Invalid image payload '{uri}': {ex}");
+                return null;
+            }
+
             if (!string.IsNullOrWhiteSpace(cachePath))
             {
                 try
@@ -464,8 +500,7 @@ public partial class DashboardWindow : Window
                 }
             }
 
-            await using var stream = new MemoryStream(bytes);
-            return new Bitmap(stream);
+            return bitmap;
         }
         catch (Exception ex)
         {
@@ -688,9 +723,7 @@ public partial class DashboardWindow : Window
             return;
         }
 
-        var bitmap = await TryLoadRemoteImageAsync(
-            info.Image ?? info.CurrentImage,
-            cachePath);
+        var bitmap = await TryLoadRemoteImageAsync(GetCourseImageSource(info), cachePath);
         if (bitmap == null)
         {
             return;
@@ -962,7 +995,7 @@ public partial class DashboardWindow : Window
             return;
         }
 
-        var bitmap = await TryLoadRemoteImageAsync(info.Avatar, cachePath);
+        var bitmap = await TryLoadRemoteImageAsync(GetLectureImageSource(info), cachePath);
         if (bitmap == null)
         {
             return;
