@@ -1,20 +1,26 @@
-# Build results
-bin/
-obj/
-
-# Visual Studio
-.vs/
-
-# Rider
-.idea/
-
-# User-specific files
-*.user
-*.suo
-
 # OS files
 .DS_Store
 Thumbs.db
+
+# .NET build outputs
+bin/
+obj/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Xcode build outputs and user data
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# IDE settings
+.vs/
+.idea/
+*.user
+*.suo
 
 # Packaging artifacts
 dist/
